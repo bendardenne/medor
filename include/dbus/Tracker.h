@@ -19,6 +19,11 @@ namespace medor::dbus {
 
         ~Tracker();
 
+        /**
+             * @return The current tracking status. For now, just a string with the active project.
+             */
+        std::map<std::string, sdbus::Variant> status() const;
+
     private:
         /**
          * Starts tracking on a new project. Any current project is stopped.
@@ -36,11 +41,6 @@ namespace medor::dbus {
          */
         void resume();
 
-
-        /**
-         * @return The current tracking status. For now, just a string with the active project.
-         */
-        std::map<std::string, sdbus::Variant> status() const;
 
         /**
          * @return All the existing projects, most recent first.

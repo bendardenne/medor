@@ -9,6 +9,6 @@
 #define D_TRACKER_OBJECT         "/org/medor/tracker"
 #define D_TRACKER_INTERFACE      "org.medor.Tracker"
 
-
+#define NOTIFY_ICON             "clock"
 
 #endif //MEDOR_CONSTANTS_H

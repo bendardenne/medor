@@ -119,12 +119,10 @@ void dbus::Tracker::stopped() const {
                                                     ("Stopped <b>" + activity.getProject() + "</b>" \
                                                      " after <b>" + format_duration(duration) + "</b>.<br/>" \
                                                      "This week: <b>" + format_duration(thisWeek) + "</b>.").c_str(),
-                                                    0);
-    notify_notification_set_timeout(n, 5000); // 10 seconds
+                                                    NOTIFY_ICON);
 
-    if (!notify_notification_show(n, 0)) {
-        std::cerr << "show has failed" << std::endl;
-    }
+    notify_notification_set_timeout(n, 5000); // 10 seconds
+    notify_notification_show(n, 0);
 }
 
 std::map<std::string, sdbus::Variant> dbus::Tracker::status() const {
