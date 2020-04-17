@@ -6,6 +6,12 @@ It serves two purposes:
   2. Teach me about some useful technologies.
   
 As a result, it's probably a bit bloated. I'm not sure anyone really needs a time tracking tool that uses dbus.
-Who know, it's a jungle out there.
+Who knows, it's a jungle out there.
 
-it's a work in progress.
+It's a work in progress.
+
+# TODO
+
+* Figure out logging and better error handling
+* Generate reports
+* Add a comment field to activities ?

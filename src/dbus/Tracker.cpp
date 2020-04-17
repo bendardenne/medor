@@ -132,8 +132,21 @@ std::map<std::string, sdbus::Variant> dbus::Tracker::status() const {
 
     if (_current.has_value()) {
         model::Activity activity = _current.value();
+
+        std::vector<model::Activity> activities = _database.getWeeklyActivities(activity.getProject(),
+                                                                                boost::gregorian::day_clock::local_day().week_number() -
+                                                                                1);
+
+        pt::time_duration thisWeek = aggregateTimes(activities);
+
+        // Add current activity to this week.
+        pt::time_duration currentDuration = pt::time_period (activity.getStart(), pt::second_clock::local_time()).length();
+
+        thisWeek += currentDuration;
+
         output["project"] = activity.getProject();
         output["start"] = pt::to_iso_string(activity.getStart());
+        output["weekly"] = thisWeek.total_seconds();
     }
 
     return output;

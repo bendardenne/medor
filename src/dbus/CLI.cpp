@@ -41,11 +41,13 @@ void dbus::CLI::status(std::string format) {
     if (status.count("project") > 0) {
         pt::ptime start = pt::from_iso_string(status["start"].get<std::string>());
         pt::ptime now = pt::second_clock::local_time();
-
         pt::time_period period(start, now);
+
+        pt::time_duration weekly = pt::seconds(status["weekly"].get<long>());
 
         boost::algorithm::replace_all(format, "%p", status["project"].get<std::string>());
         boost::algorithm::replace_all(format, "%d", format_duration(period.length()));
+        boost::algorithm::replace_all(format, "%w", format_duration(weekly));
 
         std::cout << format << std::endl;
     } else {

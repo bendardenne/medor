@@ -25,7 +25,7 @@ DB::DB(const std::string &database_file) {
     setupDb();
     sqlite3_prepare_v2(db, "select id from projects where name like ?", -1, &_getProjectId, 0);
     sqlite3_prepare_v2(db, "insert into projects (name) values (?)", -1, &_newProject, 0);
-    sqlite3_prepare_v2(db, "insert into activities (start, end, project_id) values (?,?,?)", -1, &_newActivity, 0);
+    sqlite3_prepare_v2(db, "insert into activities (start, end, comment, project_id) values (?,?,?)", -1, &_newActivity, 0);
     sqlite3_prepare_v2(db, "select distinct name from activities join projects " \
             "on activities.project_id = projects.id order by start desc limit ?", -1, &_getProjects, 0);
 
@@ -128,8 +128,10 @@ void DB::setupDb() {
                     "id integer primary key autoincrement," \
                     "start text not null," \
                     "end text not null," \
+                    "comment text not null," \
                     "project_id integer not null" \
                 ");";
+
     int ret = sqlite3_exec(db, sql.c_str(), nullptr, 0, &error);
     checkError(ret);
 
