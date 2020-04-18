@@ -12,6 +12,7 @@ It's a work in progress.
 
 # TODO
 
-* Figure out logging and better error handling
 * Generate reports
+* Figure out logging and better error handling
 * Add a comment field to activities ?
+* Interface to edit / delete activities

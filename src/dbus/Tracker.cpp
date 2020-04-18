@@ -113,7 +113,7 @@ void dbus::Tracker::stopped() const {
                                                                             boost::gregorian::day_clock::local_day().week_number() -
                                                                             1);
 
-    pt::time_duration thisWeek = aggregateTimes(activities);
+    pt::time_duration thisWeek = aggregateTimes(activities) + duration;
 
     NotifyNotification *n = notify_notification_new("Activity stopped",
                                                     ("Stopped <b>" + activity.getProject() + "</b>" \
