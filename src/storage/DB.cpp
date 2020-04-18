@@ -26,8 +26,8 @@ DB::DB(const std::string &database_file) {
     sqlite3_prepare_v2(db, "select id from projects where name like ?", -1, &_getProjectId, 0);
     sqlite3_prepare_v2(db, "insert into projects (name) values (?)", -1, &_newProject, 0);
     sqlite3_prepare_v2(db, "insert into activities (start, end, project_id) values (?,?,?)", -1, &_newActivity, 0);
-    sqlite3_prepare_v2(db, "select distinct name from activities join projects " \
-            "on activities.project_id = projects.id order by start desc limit ?", -1, &_getProjects, 0);
+    sqlite3_prepare_v2(db, "select name from activities join projects on activities.project_id = projects.id" \
+            " group by projects.id order by start desc limit ?", -1, &_getProjects, 0);
 
     sqlite3_prepare_v2(db,
 "select start,end,name from activities inner join projects on project_id = projects.id where projects.name = ? and strftime(\"%W\", start) = ?",
