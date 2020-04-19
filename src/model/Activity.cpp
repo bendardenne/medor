@@ -13,7 +13,7 @@ using namespace medor::model;
 Activity::Activity(std::string project, pt::ptime start_time, pt::ptime end_time) :
         _project(std::move(project)),
         _start(start_time),
-        _end(end_time){
+        _end(end_time) {
 
 }
 
@@ -40,4 +40,9 @@ pt::ptime Activity::getEnd() const {
 
 void Activity::setEnd(const pt::ptime &end) {
     _end = end;
+}
+
+std::ostream &medor::model::operator<<(std::ostream &out, const Activity &activity) {
+    out << activity.getProject() << "\t\t[" << activity.getStart() << " - " << activity.getEnd() << "]";
+    return out;
 }

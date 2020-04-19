@@ -22,7 +22,7 @@ namespace medor::dbus {
         /**
              * @return The current tracking status. For now, just a string with the active project.
              */
-        std::map<std::string, sdbus::Variant> status() const;
+        std::map<std::string, sdbus::Variant> status();
 
     private:
         /**
@@ -43,9 +43,9 @@ namespace medor::dbus {
 
 
         // Signals
-        void started() const;
+        void started();
 
-        void stopped() const;
+        void stopped();
 
         static pt::time_duration aggregateTimes(const std::vector<model::Activity>& vector);
 

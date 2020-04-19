@@ -15,7 +15,7 @@
 using namespace medor;
 
 dbus::Tracker::Tracker(sdbus::IConnection &connection, const std::string &database_file) :
-        _database(database_file),
+        _database(database_file, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE),
         _dbus_object(sdbus::createObject(connection, D_TRACKER_OBJECT)) {
     namespace ph = std::placeholders;
 
@@ -84,7 +84,7 @@ void dbus::Tracker::resume() {
 }
 
 
-void dbus::Tracker::started() const {
+void dbus::Tracker::started() {
     model::Activity activity = this->_current.value();
 
     _dbus_object->emitSignal("started")
@@ -92,7 +92,7 @@ void dbus::Tracker::started() const {
             .withArguments(activity.getProject());
 }
 
-void dbus::Tracker::stopped() const {
+void dbus::Tracker::stopped() {
     model::Activity activity = this->_current.value();
 
     _dbus_object->emitSignal("stopped")
@@ -117,7 +117,7 @@ void dbus::Tracker::stopped() const {
     notify_notification_show(n, 0);
 }
 
-std::map<std::string, sdbus::Variant> dbus::Tracker::status() const {
+std::map<std::string, sdbus::Variant> dbus::Tracker::status() {
     std::map<std::string, sdbus::Variant> output;
 
     if (_current.has_value()) {

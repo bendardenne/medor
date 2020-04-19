@@ -27,6 +27,7 @@ namespace medor::model {
 
         void setEnd(const pt::ptime &endTime);
 
+        friend std::ostream &operator<<(std::ostream &out, const Activity &activity);
 
     private:
         std::string _project;

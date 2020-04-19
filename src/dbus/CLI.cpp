@@ -14,7 +14,7 @@
 
 using namespace medor;
 
-dbus::CLI::CLI(std::string database_file) : _database(database_file),
+dbus::CLI::CLI(std::string database_file) : _database(database_file, SQLITE_OPEN_READONLY),
                                             _trackerProxy(sdbus::createProxy(D_SERVICE_NAME, D_TRACKER_OBJECT)) {
 }
 
@@ -66,6 +66,10 @@ void dbus::CLI::projects() {
 }
 
 void dbus::CLI::report(pt::time_period period) {
+    pt::time_period this_week = util::time::week_from_now(0);
+    std::vector<model::Activity> allActivities = _database.getActivities(this_week);
 
-    //    _database.
+    for (const auto &activity : allActivities) {
+        std::cout << activity << std::endl;
+    }
 }
