@@ -24,9 +24,15 @@ DB::DB(const std::string &database_file, int mode) {
     setupDb();
 }
 
+DB::~DB() {
+    int ret = sqlite3_close(db);
+    checkError(ret);
+}
+
 void DB::add(const model::Activity &activity) {
     std::string project = activity.getProject();
 
+    sqlite3_stmt *_getProjectId;
     sqlite3_prepare_v2(db, "select id from projects where name like ?", -1, &_getProjectId, 0);
     sqlite3_bind_text(_getProjectId, 1, project.c_str(), project.length(), SQLITE_STATIC);
 
@@ -37,6 +43,7 @@ void DB::add(const model::Activity &activity) {
     }
 
     if (!id.has_value()) {
+        sqlite3_stmt *_newProject;
         sqlite3_prepare_v2(db, "insert into projects (name) values (?)", -1, &_newProject, 0);
         sqlite3_bind_text(_newProject, 1, project.c_str(), project.length(), SQLITE_STATIC);
         sqlite3_step(_newProject);
@@ -44,25 +51,26 @@ void DB::add(const model::Activity &activity) {
         id = sqlite3_column_int(_getProjectId, 0);
         sqlite3_finalize(_newProject);
     }
+    sqlite3_finalize(_getProjectId);
 
     assert(id.has_value());
 
     const std::string startString = pt::to_iso_extended_string(activity.getStart());
     const std::string endString = pt::to_iso_extended_string(activity.getEnd());
 
+    sqlite3_stmt *_newActivity;
     sqlite3_prepare_v2(db, "insert into activities (start, end, project_id) values (?,?,?)", -1, &_newActivity, 0);
     sqlite3_bind_text(_newActivity, 1, startString.c_str(), startString.length(), SQLITE_STATIC);
     sqlite3_bind_text(_newActivity, 2, endString.c_str(), endString.length(), SQLITE_STATIC);
     sqlite3_bind_int(_newActivity, 3, id.value());
     sqlite3_step(_newActivity);
-
     sqlite3_finalize(_newActivity);
-    sqlite3_finalize(_getProjectId);
 }
 
 std::vector<std::string> DB::getProjects() {
     std::vector<std::string> projects;
 
+    sqlite3_stmt *_getProjects;
     sqlite3_prepare_v2(db, "select name from activities join projects on activities.project_id = projects.id" \
             " group by projects.id order by start desc limit ?", -1, &_getProjects, 0);
     sqlite3_bind_int(_getProjects, 1, 50);
@@ -81,6 +89,7 @@ std::vector<medor::model::Activity> DB::getActivities(std::string project, pt::t
     std::string period_start = pt::to_iso_extended_string(period.begin());
     std::string period_end = pt::to_iso_extended_string(period.end());
 
+    sqlite3_stmt *_projectInPeriod;
     sqlite3_prepare_v2(db, "select start,end,name from activities inner join projects on project_id = projects.id" \
             " where projects.name = ? and start between ? and ? ", -1, &_projectInPeriod, 0);
     sqlite3_bind_text(_projectInPeriod, 1, project.c_str(), project.length(), SQLITE_STATIC);
@@ -107,6 +116,7 @@ std::vector<medor::model::Activity> DB::getActivities(pt::time_period period) {
     std::string period_start = pt::to_iso_extended_string(period.begin());
     std::string period_end = pt::to_iso_extended_string(period.end());
 
+    sqlite3_stmt *_activitiesInPeriod;
     sqlite3_prepare_v2(db, "select start,end,name from activities inner join projects on project_id = projects.id" \
             " where start between ? and ? ", -1, &_activitiesInPeriod, 0);
     sqlite3_bind_text(_activitiesInPeriod, 1, period_start.c_str(), period_start.length(), SQLITE_STATIC);
@@ -124,11 +134,6 @@ std::vector<medor::model::Activity> DB::getActivities(pt::time_period period) {
 
     sqlite3_finalize(_activitiesInPeriod);
     return ret;
-}
-
-DB::~DB() {
-    int ret = sqlite3_close(db);
-    checkError(ret);
 }
 
 void inline DB::checkError(int errorCode) {

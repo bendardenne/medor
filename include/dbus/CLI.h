@@ -13,9 +13,9 @@ namespace medor::dbus {
 
     class CLI {
     public:
-        explicit CLI(std::string database_file);
+        explicit CLI(const std::string& database_file);
 
-        void start(const std::string& activity);
+        void start(const std::string &activity);
 
         void stop();
 
@@ -28,9 +28,6 @@ namespace medor::dbus {
         void report(pt::time_period period);
 
     private:
-
-        static std::string format_duration(boost::posix_time::time_duration duration);
-
         medor::storage::DB _database;
         std::unique_ptr<sdbus::IProxy> _trackerProxy;
     };

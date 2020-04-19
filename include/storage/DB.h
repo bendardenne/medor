@@ -30,13 +30,6 @@ namespace medor::storage {
         void setupDb();
 
         sqlite3 *db;
-
-        sqlite3_stmt *_getProjectId;
-        sqlite3_stmt *_newProject;
-        sqlite3_stmt *_newActivity;
-        sqlite3_stmt *_getProjects;
-        sqlite3_stmt *_projectInPeriod;
-        sqlite3_stmt *_activitiesInPeriod;
     };
 }
 
