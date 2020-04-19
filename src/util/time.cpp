@@ -2,6 +2,7 @@
 // Created by bdardenn on 4/19/20.
 //
 
+#include <model/Activity.h>
 #include "util/time.h"
 
 //using namespace medor::util;
@@ -36,4 +37,15 @@ std::string time::format_duration(const pt::time_duration &duration, bool brief)
 
     ret << std::to_string(duration.minutes()) + (brief ? "m" : " minutes");
     return ret.str();
+}
+
+pt::time_duration time::aggregateTimes(const std::vector<model::Activity> &activities) {
+    pt::time_duration total;
+
+    for (const auto &activity: activities) {
+        pt::time_period period(activity.getStart(), activity.getEnd());
+        total += period.length();
+    }
+
+    return total;
 }

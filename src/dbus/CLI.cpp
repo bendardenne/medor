@@ -14,6 +14,8 @@
 
 using namespace medor;
 
+namespace greg = boost::gregorian;
+
 dbus::CLI::CLI(std::string database_file) : _database(database_file, SQLITE_OPEN_READONLY),
                                             _trackerProxy(sdbus::createProxy(D_SERVICE_NAME, D_TRACKER_OBJECT)) {
 }
@@ -66,10 +68,28 @@ void dbus::CLI::projects() {
 }
 
 void dbus::CLI::report(pt::time_period period) {
+    //FIXME doesn't include current activity
     pt::time_period this_week = util::time::week_from_now(0);
-    std::vector<model::Activity> allActivities = _database.getActivities(this_week);
+    std::vector<model::Activity> all_activities = _database.getActivities(this_week);
 
-    for (const auto &activity : allActivities) {
-        std::cout << activity << std::endl;
+    std::map<greg::date, std::vector<model::Activity>> by_day;
+
+    for (const auto &activity : all_activities) {
+        by_day[activity.getStart().date()].emplace_back(activity);
+    }
+
+    for (const auto &for_day : by_day) {
+        std::cout << for_day.first.day_of_week().as_long_string() << std::endl;
+        std::map<std::string, std::vector<model::Activity>> by_project;
+
+        for (const auto &activity: for_day.second) {
+            by_project[activity.getProject()].emplace_back(activity);
+        }
+
+        for (const auto &project: by_project) {
+            const std::string &spent_on_project = util::time::format_duration(
+                    util::time::aggregateTimes(project.second), false);
+            std::cout << "\t\t" << project.first << ": " << spent_on_project << std::endl;
+        }
     }
 }

@@ -105,7 +105,7 @@ void dbus::Tracker::stopped() {
     std::vector<model::Activity> activities = _database.getActivities(activity.getProject(),
                                                                       util::time::week_from_now(0));
 
-    pt::time_duration thisWeek = aggregateTimes(activities);
+    pt::time_duration thisWeek = util::time::aggregateTimes(activities);
 
     NotifyNotification *n = notify_notification_new("Activity stopped",
                                                     ("Stopped <b>" + activity.getProject() + "</b>" \
@@ -126,7 +126,7 @@ std::map<std::string, sdbus::Variant> dbus::Tracker::status() {
         std::vector<model::Activity> activities = _database.getActivities(activity.getProject(),
                                                                           util::time::week_from_now(0));
 
-        pt::time_duration thisWeek = aggregateTimes(activities);
+        pt::time_duration thisWeek = util::time::aggregateTimes(activities);
 
         // Add current activity to this week.
         pt::time_duration currentDuration = pt::time_period(activity.getStart(),
@@ -140,18 +140,6 @@ std::map<std::string, sdbus::Variant> dbus::Tracker::status() {
     }
 
     return output;
-}
-
-
-pt::time_duration dbus::Tracker::aggregateTimes(const std::vector<model::Activity> &activities) {
-    pt::time_duration total;
-
-    for (const auto &activity: activities) {
-        pt::time_period period(activity.getStart(), activity.getEnd());
-        total += period.length();
-    }
-
-    return total;
 }
 
 dbus::Tracker::~Tracker() {

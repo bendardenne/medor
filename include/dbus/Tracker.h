@@ -15,7 +15,7 @@ namespace medor::dbus {
 
     class Tracker {
     public:
-        Tracker(sdbus::IConnection &connection, const std::string& database_file);
+        Tracker(sdbus::IConnection &connection, const std::string &database_file);
 
         ~Tracker();
 
@@ -47,12 +47,8 @@ namespace medor::dbus {
 
         void stopped();
 
-        static pt::time_duration aggregateTimes(const std::vector<model::Activity>& vector);
-
         storage::DB _database;
-
         std::optional<model::Activity> _current;
-
         std::unique_ptr<sdbus::IObject> _dbus_object{};
     };
 }

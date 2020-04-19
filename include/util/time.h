@@ -22,6 +22,8 @@ namespace medor::util::time {
      */
     std::string format_duration(const pt::time_duration &duration, bool brief);
 
+    pt::time_duration aggregateTimes(const std::vector<model::Activity> &activities);
+
 }
 
 #endif //MEDOR_TIMEUTIL_H
