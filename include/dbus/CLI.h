@@ -5,12 +5,15 @@
 #ifndef MEDOR_CLI_H
 #define MEDOR_CLI_H
 
-#include <boost/date_time/posix_time/posix_time_config.hpp>
+#include <boost/date_time/posix_time/time_period.hpp>
+#include <storage/DB.h>
 
 namespace medor::dbus {
+    namespace pt = boost::posix_time;
+
     class CLI {
     public:
-        CLI();
+        explicit CLI(std::string database_file);
 
         void start(const std::string& activity);
 
@@ -21,11 +24,15 @@ namespace medor::dbus {
         void status(std::string format);
 
         void projects();
+
+        void report(pt::time_period period);
+
     private:
 
         static std::string format_duration(boost::posix_time::time_duration duration);
 
-        std::unique_ptr<sdbus::IProxy> trackerProxy;
+        medor::storage::DB _database;
+        std::unique_ptr<sdbus::IProxy> _trackerProxy;
     };
 }
 

@@ -42,22 +42,15 @@ namespace medor::dbus {
         void resume();
 
 
-        /**
-         * @return All the existing projects, most recent first.
-         */
-        std::vector<std::string> projects() const;
-
-
         // Signals
         void started() const;
 
         void stopped() const;
 
-        static pt::time_duration aggregateTimes(std::vector<model::Activity> vector);
-
-        static std::string format_duration(pt::time_duration);
+        static pt::time_duration aggregateTimes(const std::vector<model::Activity>& vector);
 
         storage::DB _database;
+
         std::optional<model::Activity> _current;
 
         std::unique_ptr<sdbus::IObject> _dbus_object{};

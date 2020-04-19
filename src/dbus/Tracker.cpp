@@ -10,11 +10,11 @@
 
 #include "dbus/Tracker.h"
 #include "dbus/Constants.h"
+#include "util/time.h"
 
 using namespace medor;
-namespace pt = boost::posix_time;
 
-dbus::Tracker::Tracker(sdbus::IConnection &connection, const std::string& database_file) :
+dbus::Tracker::Tracker(sdbus::IConnection &connection, const std::string &database_file) :
         _database(database_file),
         _dbus_object(sdbus::createObject(connection, D_TRACKER_OBJECT)) {
     namespace ph = std::placeholders;
@@ -25,7 +25,6 @@ dbus::Tracker::Tracker(sdbus::IConnection &connection, const std::string& databa
     std::function<void()> stop = std::bind(&Tracker::stop, this);
     std::function<void()> resume = std::bind(&Tracker::resume, this);
     std::function<std::map<std::string, sdbus::Variant>()> status = std::bind(&Tracker::status, this);
-    std::function<std::vector<std::string>()> projects = std::bind(&Tracker::projects, this);
 
     _dbus_object->registerMethod("start")
             .onInterface(D_TRACKER_INTERFACE)
@@ -50,10 +49,6 @@ dbus::Tracker::Tracker(sdbus::IConnection &connection, const std::string& databa
     _dbus_object->registerProperty("status")
             .onInterface(D_TRACKER_INTERFACE)
             .withGetter(status);
-
-    _dbus_object->registerProperty("projects")
-            .onInterface(D_TRACKER_INTERFACE)
-            .withGetter(projects);
 
     _dbus_object->finishRegistration();
 }
@@ -107,18 +102,15 @@ void dbus::Tracker::stopped() const {
     pt::time_period period(activity.getStart(), activity.getEnd());
     pt::time_duration duration = period.length();
 
-    // Note: boost week_number is in [1;54] (ISO standard)
-    // SQLite is in [0;53]
-    std::vector<model::Activity> activities = _database.getWeeklyActivities(activity.getProject(),
-                                                                            boost::gregorian::day_clock::local_day().week_number() -
-                                                                            1);
+    std::vector<model::Activity> activities = _database.getActivities(activity.getProject(),
+                                                                      util::time::week_from_now(0));
 
     pt::time_duration thisWeek = aggregateTimes(activities);
 
     NotifyNotification *n = notify_notification_new("Activity stopped",
                                                     ("Stopped <b>" + activity.getProject() + "</b>" \
-                                                     " after <b>" + format_duration(duration) + "</b>.<br/>" \
-                                                     "This week: <b>" + format_duration(thisWeek) + "</b>.").c_str(),
+                                                     " after <b>" + util::time::format_duration(duration, false) + "</b>.<br/>" \
+                                                     "This week: <b>" + util::time::format_duration(thisWeek, false) + "</b>.").c_str(),
                                                     NOTIFY_ICON);
 
     notify_notification_set_timeout(n, 5000); // 10 seconds
@@ -131,14 +123,14 @@ std::map<std::string, sdbus::Variant> dbus::Tracker::status() const {
     if (_current.has_value()) {
         model::Activity activity = _current.value();
 
-        std::vector<model::Activity> activities = _database.getWeeklyActivities(activity.getProject(),
-                                                                                boost::gregorian::day_clock::local_day().week_number() -
-                                                                                1);
+        std::vector<model::Activity> activities = _database.getActivities(activity.getProject(),
+                                                                          util::time::week_from_now(0));
 
         pt::time_duration thisWeek = aggregateTimes(activities);
 
         // Add current activity to this week.
-        pt::time_duration currentDuration = pt::time_period (activity.getStart(), pt::second_clock::local_time()).length();
+        pt::time_duration currentDuration = pt::time_period(activity.getStart(),
+                                                            pt::second_clock::local_time()).length();
 
         thisWeek += currentDuration;
 
@@ -150,26 +142,8 @@ std::map<std::string, sdbus::Variant> dbus::Tracker::status() const {
     return output;
 }
 
-std::vector<std::string> dbus::Tracker::projects() const {
-    return _database.getProjects();
-}
 
-std::string dbus::Tracker::format_duration(pt::time_duration duration) {
-    std::stringstream ret;
-
-    if (duration.hours() > 24) {
-        ret << std::to_string((int) std::ceil(duration.hours() / 24)) + " days ";
-    }
-
-    if (duration.hours() > 0) {
-        ret << std::to_string(duration.hours() % 24) + " hours ";
-    }
-
-    ret << std::to_string(duration.minutes()) + " minutes";
-    return ret.str();
-}
-
-pt::time_duration dbus::Tracker::aggregateTimes(std::vector<model::Activity> activities) {
+pt::time_duration dbus::Tracker::aggregateTimes(const std::vector<model::Activity> &activities) {
     pt::time_duration total;
 
     for (const auto &activity: activities) {

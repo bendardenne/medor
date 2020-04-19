@@ -1,6 +1,6 @@
 find_package(sdbus-c++ REQUIRED)
 
-
+## TODO move to cmake file ?
 find_package(PkgConfig QUIET)
 pkg_check_modules(LIBNOTIFY QUIET libnotify)
 
@@ -27,13 +27,12 @@ mark_as_advanced(
 )
 
 
-file(GLOB HEADER_LIST CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/include/dbus/*.hpp")
+file(GLOB HEADER_LIST CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/include/dbus/*.h")
 
 add_library(dbus STATIC CLI.cpp Tracker.cpp ${HEADER_LIST})
 
 set(Boost_USE_STATIC_LIBS ON)
 set(Boost_LIB_PREFIX "lib")
 target_include_directories(dbus PUBLIC ${CMAKE_SOURCE_DIR}/include ${LIBNOTIFY_INCLUDE_DIRS})
-#target_include_directories(dbus PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../model)
 
-target_link_libraries(dbus PRIVATE model storage SDBusCpp::sdbus-c++ ${LIBNOTIFY_LIBRARIES})
+target_link_libraries(dbus PRIVATE util model storage SDBusCpp::sdbus-c++ ${LIBNOTIFY_LIBRARIES})

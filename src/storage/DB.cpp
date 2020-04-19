@@ -29,9 +29,8 @@ DB::DB(const std::string &database_file) {
     sqlite3_prepare_v2(db, "select name from activities join projects on activities.project_id = projects.id" \
             " group by projects.id order by start desc limit ?", -1, &_getProjects, 0);
 
-    sqlite3_prepare_v2(db,
-"select start,end,name from activities inner join projects on project_id = projects.id where projects.name = ? and strftime(\"%W\", start) = ?",
-                       -1, &_activitiesForWeek, 0);
+    sqlite3_prepare_v2(db, "select start,end,name from activities inner join projects on project_id = projects.id" \
+            " where projects.name = ? and start between ? and ? ", -1, &_activitiesInPeriod, 0);
 }
 
 void DB::add(const model::Activity &activity) {
@@ -71,7 +70,7 @@ std::vector<std::string> DB::getProjects() const {
     std::vector<std::string> projects;
 
     sqlite3_bind_int(_getProjects, 1, 50);
-    while (sqlite3_step(_getProjects) == SQLITE_ROW) { // While query has result-rows.
+    while (sqlite3_step(_getProjects) == SQLITE_ROW) {
         const char *name = reinterpret_cast<const char *> (sqlite3_column_text(_getProjects, 0));
         projects.emplace_back(name);
     }
@@ -80,33 +79,36 @@ std::vector<std::string> DB::getProjects() const {
     return projects;
 }
 
-std::vector<medor::model::Activity> DB::getWeeklyActivities(std::string project, unsigned int week) const {
+std::vector<medor::model::Activity> DB::getActivities(std::string project, pt::time_period period) const {
     std::vector<medor::model::Activity> ret;
-    const std::string &weekStr = std::to_string(week);
 
-    sqlite3_bind_text(_activitiesForWeek, 1, project.c_str(), project.length(), SQLITE_STATIC);
-    sqlite3_bind_text(_activitiesForWeek, 2, weekStr.c_str(), weekStr.length(), SQLITE_STATIC);
+    std::string period_start = pt::to_iso_extended_string(period.begin());
+    std::string period_end = pt::to_iso_extended_string(period.end());
 
-    while (sqlite3_step(_activitiesForWeek) == SQLITE_ROW) { // While query has result-rows.
-        const char *start = reinterpret_cast<const char *> (sqlite3_column_text(_activitiesForWeek, 0));
-        const char *end = reinterpret_cast<const char *> (sqlite3_column_text(_activitiesForWeek, 1));
-        const char *name = reinterpret_cast<const char *> (sqlite3_column_text(_activitiesForWeek, 2));
+    sqlite3_bind_text(_activitiesInPeriod, 1, project.c_str(), project.length(), SQLITE_STATIC);
+    sqlite3_bind_text(_activitiesInPeriod, 2, period_start.c_str(), period_start.length(), SQLITE_STATIC);
+    sqlite3_bind_text(_activitiesInPeriod, 3, period_end.c_str(), period_end.length(), SQLITE_STATIC);
+
+    while (sqlite3_step(_activitiesInPeriod) == SQLITE_ROW) {
+        const char *start = reinterpret_cast<const char *> (sqlite3_column_text(_activitiesInPeriod, 0));
+        const char *end = reinterpret_cast<const char *> (sqlite3_column_text(_activitiesInPeriod, 1));
+        const char *name = reinterpret_cast<const char *> (sqlite3_column_text(_activitiesInPeriod, 2));
 
         ret.emplace_back(medor::model::Activity(name,
                                                 pt::from_iso_extended_string(start),
                                                 pt::from_iso_extended_string(end)));
     }
 
-    sqlite3_reset(_activitiesForWeek);
+    sqlite3_reset(_activitiesInPeriod);
     return ret;
 }
 
 DB::~DB() {
-    sqlite3_finalize (_getProjectId);
-    sqlite3_finalize (_newProject);
-    sqlite3_finalize (_newActivity);
-    sqlite3_finalize (_getProjects);
-    sqlite3_finalize (_activitiesForWeek);
+    sqlite3_finalize(_getProjectId);
+    sqlite3_finalize(_newProject);
+    sqlite3_finalize(_newActivity);
+    sqlite3_finalize(_getProjects);
+    sqlite3_finalize(_activitiesInPeriod);
 
     int ret = sqlite3_close(db);
     checkError(ret);

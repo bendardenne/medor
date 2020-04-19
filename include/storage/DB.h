@@ -20,7 +20,7 @@ namespace medor::storage {
 
         std::vector<std::string> getProjects() const;
 
-        std::vector<medor::model::Activity> getWeeklyActivities(std::string basicString, unsigned int week) const;
+        std::vector<medor::model::Activity> getActivities(std::string project, pt::time_period period) const;
 
     private:
         static void inline checkError(int errorCode);
@@ -33,7 +33,7 @@ namespace medor::storage {
         sqlite3_stmt *_newProject;
         sqlite3_stmt *_newActivity;
         sqlite3_stmt *_getProjects;
-        sqlite3_stmt *_activitiesForWeek;
+        sqlite3_stmt *_activitiesInPeriod;
     };
 }
 
