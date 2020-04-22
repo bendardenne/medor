@@ -7,16 +7,9 @@
 
 using namespace medor;
 
-dbus::VcsTracker::VcsTracker(sdbus::IConnection &dbus_connection, sqlite3 *db_connection) :
-        _dbus_object(sdbus::createObject(dbus_connection, D_VCSTRACKER_OBJECT)),
-        _database(db_connection) {
+dbus::VcsTracker::VcsTracker(sdbus::IConnection& dbus_connection, sqlite3* db_connection)
+    : _dbus_object(sdbus::createObject(dbus_connection, D_VCSTRACKER_OBJECT)), _database(db_connection) {}
 
-}
+void dbus::VcsTracker::newRepo(std::string repo, std::string project) {}
 
-void dbus::VcsTracker::newRepo(std::string repo, std::string project) {
-
-}
-
-void dbus::VcsTracker::activityOnRepo(std::string repo) {
-
-}
+void dbus::VcsTracker::activityOnRepo(std::string repo) {}

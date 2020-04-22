@@ -2,10 +2,10 @@
 // Created by bdardenn on 4/19/20.
 //
 
-#include <model/Activity.h>
 #include "util/time.h"
+#include "model/Activity.h"
 
-//using namespace medor::util;
+// using namespace medor::util;
 
 using namespace medor::util;
 namespace pt = boost::posix_time;
@@ -24,11 +24,11 @@ pt::time_period time::week_from_now(unsigned int offset) {
     return pt::time_period(week_start, week_end);
 }
 
-std::string time::format_duration(const pt::time_duration &duration, bool brief) {
+std::string time::format_duration(const pt::time_duration& duration, bool brief) {
     std::stringstream ret;
 
     if (duration.hours() > 24) {
-        ret << std::to_string((int) std::ceil(duration.hours() / 24)) + (brief ? "d" : " days ");
+        ret << std::to_string((int)std::ceil(duration.hours() / 24)) + (brief ? "d" : " days ");
     }
 
     if (duration.hours() > 0) {
@@ -39,10 +39,10 @@ std::string time::format_duration(const pt::time_duration &duration, bool brief)
     return ret.str();
 }
 
-pt::time_duration time::aggregateTimes(const std::vector<model::Activity> &activities) {
+pt::time_duration time::aggregateTimes(const std::vector<model::Activity>& activities) {
     pt::time_duration total;
 
-    for (const auto &activity: activities) {
+    for (const auto& activity : activities) {
         pt::time_period period(activity.getStart(), activity.getEnd());
         total += period.length();
     }

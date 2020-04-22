@@ -9,11 +9,10 @@
 
 namespace medor::util::database {
 
-    void createTables(sqlite3 *db_connection);
+void createTables(sqlite3* db_connection);
 
-    void checkError(int ret);
+void checkError(int ret);
 
+} // namespace medor::util::database
 
-}
-
-#endif //MEDOR_DATABASE_H
+#endif // MEDOR_DATABASE_H

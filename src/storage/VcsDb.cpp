@@ -6,10 +6,6 @@
 
 using namespace medor;
 
-storage::VcsDb::VcsDb(sqlite3 *db_connection) : _db(db_connection) {
-    setupDb();
-}
+storage::VcsDb::VcsDb(sqlite3* db_connection) : _db(db_connection) { setupDb(); }
 
-void storage::VcsDb::setupDb() {
-
-}
+void storage::VcsDb::setupDb() {}

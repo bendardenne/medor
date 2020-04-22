@@ -2,11 +2,11 @@
 // Created by bdardenn on 4/14/20.
 //
 
-#include <sdbus-c++/IProxy.h>
-#include <iostream>
 #include <boost/algorithm/string/replace.hpp>
-#include <boost/date_time/posix_time/ptime.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/posix_time/ptime.hpp>
+#include <iostream>
+#include <sdbus-c++/IProxy.h>
 
 #include "dbus/CLI.h"
 #include "dbus/Constants.h"
@@ -16,29 +16,20 @@ using namespace medor;
 
 namespace greg = boost::gregorian;
 
-dbus::CLI::CLI(sqlite3 *db_connection) : _database(db_connection),
-                                         _trackerProxy(sdbus::createProxy(D_SERVICE_NAME, D_TRACKER_OBJECT)) {
+dbus::CLI::CLI(sqlite3* db_connection)
+    : _database(db_connection), _trackerProxy(sdbus::createProxy(D_SERVICE_NAME, D_TRACKER_OBJECT)) {}
+
+void dbus::CLI::start(const std::string& activity) {
+    _trackerProxy->callMethod("start").onInterface(D_TRACKER_INTERFACE).withArguments(activity);
 }
 
-void dbus::CLI::start(const std::string &activity) {
-    _trackerProxy->callMethod("start")
-            .onInterface(D_TRACKER_INTERFACE)
-            .withArguments(activity);
-}
+void dbus::CLI::stop() { _trackerProxy->callMethod("stop").onInterface(D_TRACKER_INTERFACE); }
 
-void dbus::CLI::stop() {
-    _trackerProxy->callMethod("stop")
-            .onInterface(D_TRACKER_INTERFACE);
-}
-
-void dbus::CLI::resume() {
-    _trackerProxy->callMethod("resume")
-            .onInterface(D_TRACKER_INTERFACE);
-}
+void dbus::CLI::resume() { _trackerProxy->callMethod("resume").onInterface(D_TRACKER_INTERFACE); }
 
 void dbus::CLI::status(std::string format) {
     std::map<std::string, sdbus::Variant> status =
-            _trackerProxy->getProperty("status").onInterface(D_TRACKER_INTERFACE);
+        _trackerProxy->getProperty("status").onInterface(D_TRACKER_INTERFACE);
 
     if (status.count("project") > 0) {
         pt::ptime start = pt::from_iso_string(status["start"].get<std::string>());
@@ -58,44 +49,43 @@ void dbus::CLI::status(std::string format) {
 }
 
 void dbus::CLI::projects() {
-    // TODO this does not necessarily include the current project, or it may not be the first of the list.
+    // TODO this does not necessarily include the current project, or it may not
+    // be the first of the list.
     //  Maybe not a problem?
     std::vector<std::string> projects = _database.getProjects();
 
-    for (const auto &project : projects) {
+    for (const auto& project : projects) {
         std::cout << project << std::endl;
     }
 }
 
 void dbus::CLI::report(pt::time_period period) {
-    //FIXME doesn't include current activity
+    // FIXME doesn't include current activity
     pt::time_period this_week = util::time::week_from_now(0);
     std::vector<model::Activity> all_activities = _database.getActivities(this_week);
 
     std::map<greg::date, std::vector<model::Activity>> by_day;
 
-    for (const auto &activity : all_activities) {
+    for (const auto& activity : all_activities) {
         by_day[activity.getStart().date()].emplace_back(activity);
     }
 
-    for (const auto &for_day : by_day) {
+    for (const auto& for_day : by_day) {
         std::cout << for_day.first.day_of_week().as_long_string() << std::endl;
         std::map<std::string, std::vector<model::Activity>> by_project;
 
-        for (const auto &activity: for_day.second) {
+        for (const auto& activity : for_day.second) {
             by_project[activity.getProject()].emplace_back(activity);
         }
 
-        for (const auto &project: by_project) {
-            const std::string &spent_on_project = util::time::format_duration(
-                    util::time::aggregateTimes(project.second), false);
+        for (const auto& project : by_project) {
+            const std::string& spent_on_project =
+                util::time::format_duration(util::time::aggregateTimes(project.second), false);
             std::cout << "\t\t" << project.first << ": " << spent_on_project << std::endl;
         }
     }
 }
 
 void dbus::CLI::setQuiet(bool quiet) {
-    _trackerProxy->setProperty("quiet")
-            .onInterface(D_TRACKER_INTERFACE)
-            .toValue(quiet);
+    _trackerProxy->setProperty("quiet").onInterface(D_TRACKER_INTERFACE).toValue(quiet);
 }

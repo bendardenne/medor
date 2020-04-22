@@ -8,18 +8,16 @@
 #include <sqlite3.h>
 
 namespace medor::storage {
-    class VcsDb {
-    public:
-        explicit VcsDb(sqlite3 *db_connection);
+class VcsDb {
+  public:
+    explicit VcsDb(sqlite3* db_connection);
 
+  private:
+    sqlite3* _db;
 
-    private:
-        sqlite3* _db;
+    void setupDb();
+};
 
-        void setupDb();
-    };
+} // namespace medor::storage
 
-
-}
-
-#endif //MEDOR_VCSDB_H
+#endif // MEDOR_VCSDB_H

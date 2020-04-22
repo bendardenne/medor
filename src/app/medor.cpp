@@ -1,20 +1,16 @@
-#include <iostream>
-#include <boost/program_options.hpp>
-#include <sdbus-c++/sdbus-c++.h>
-#include <pwd.h>
 #include <boost/date_time/posix_time/posix_time_types.hpp>
+#include <boost/program_options.hpp>
+#include <iostream>
+#include <pwd.h>
+#include <sdbus-c++/sdbus-c++.h>
 
 #include "dbus/CLI.h"
-
-void parseCommandOptions(boost::program_options::parsed_options options,
-                         boost::program_options::options_description description,
-                         boost::program_options::variables_map map);
 
 using namespace medor;
 namespace po = boost::program_options;
 namespace pt = boost::posix_time;
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
     // TODO better option parsing etc
     std::string cmd = argv[1];
 
@@ -25,7 +21,7 @@ int main(int argc, char **argv) {
     }
     std::string db_file = homedir + "/.config/medor/activities.db";
 
-    sqlite3 *db_connection;
+    sqlite3* db_connection;
     sqlite3_open_v2(db_file.c_str(), &db_connection, SQLITE_OPEN_READONLY, nullptr);
 
     try {
@@ -49,18 +45,10 @@ int main(int argc, char **argv) {
         } else if (cmd == "quiet") {
             cli.setQuiet(std::string(argv[2]) == "on");
         }
-    } catch (sdbus::Error &e) {
+    } catch (sdbus::Error& e) {
         std::cerr << "Medor is not running" << std::endl;
         return -EHOSTDOWN;
     }
 
-
     return 0;
 }
-
-
-
-
-
-
-

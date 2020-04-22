@@ -2,15 +2,15 @@
 // Created by bdardenn on 4/22/20.
 //
 
+#include <iostream>
 #include <string>
 
-#include <util/database.h>
-#include <iostream>
+#include "util/database.h"
 
 using namespace medor;
 
-void util::database::createTables(sqlite3 *db_connection) {
-    char *error = 0;
+void util::database::createTables(sqlite3* db_connection) {
+    char* error = 0;
     std::string sql = R"sql(
     create table if not exists activities (
         id integer primary key autoincrement,
@@ -51,5 +51,3 @@ void inline util::database::checkError(int errorCode) {
     std::string errorMessage = sqlite3_errstr(errorCode);
     std::cerr << errorMessage << std::endl;
 }
-
-
