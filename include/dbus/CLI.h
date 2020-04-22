@@ -27,6 +27,8 @@ namespace medor::dbus {
 
         void report(pt::time_period period);
 
+        void setQuiet(bool quiet);
+
     private:
         medor::storage::DB _database;
         std::unique_ptr<sdbus::IProxy> _trackerProxy;

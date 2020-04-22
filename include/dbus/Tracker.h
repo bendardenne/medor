@@ -41,6 +41,9 @@ namespace medor::dbus {
          */
         void resume();
 
+        bool isQuiet() const;
+
+        void setQuiet(bool quiet);
 
         // Signals
         void started();
@@ -48,8 +51,9 @@ namespace medor::dbus {
         void stopped();
 
         storage::DB _database;
-        std::optional<model::Activity> _current;
         std::unique_ptr<sdbus::IObject> _dbus_object{};
+        std::optional<model::Activity> _current;
+        bool _quiet = false;
     };
 }
 

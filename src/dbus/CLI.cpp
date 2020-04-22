@@ -93,3 +93,9 @@ void dbus::CLI::report(pt::time_period period) {
         }
     }
 }
+
+void dbus::CLI::setQuiet(bool quiet) {
+    _trackerProxy->setProperty("quiet")
+            .onInterface(D_TRACKER_INTERFACE)
+            .toValue(quiet);
+}

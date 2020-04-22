@@ -25,6 +25,8 @@ dbus::Tracker::Tracker(sdbus::IConnection &connection, const std::string &databa
     std::function<void()> stop = std::bind(&Tracker::stop, this);
     std::function<void()> resume = std::bind(&Tracker::resume, this);
     std::function<std::map<std::string, sdbus::Variant>()> status = std::bind(&Tracker::status, this);
+    std::function<bool()> isQuiet = std::bind(&Tracker::isQuiet, this);
+    std::function<void(bool)> setQuiet = std::bind(&Tracker::setQuiet, this, ph::_1);
 
     _dbus_object->registerMethod("start")
             .onInterface(D_TRACKER_INTERFACE)
@@ -50,7 +52,18 @@ dbus::Tracker::Tracker(sdbus::IConnection &connection, const std::string &databa
             .onInterface(D_TRACKER_INTERFACE)
             .withGetter(status);
 
+    _dbus_object->registerProperty("quiet")
+            .onInterface(D_TRACKER_INTERFACE)
+            .withGetter(isQuiet)
+            .withSetter(setQuiet);
+
     _dbus_object->finishRegistration();
+}
+
+dbus::Tracker::~Tracker() {
+    if (_current.has_value()) {
+        stop();
+    }
 }
 
 void dbus::Tracker::start(std::string project) {
@@ -107,14 +120,19 @@ void dbus::Tracker::stopped() {
 
     pt::time_duration thisWeek = util::time::aggregateTimes(activities);
 
-    NotifyNotification *n = notify_notification_new("Activity stopped",
-                                                    ("Stopped <b>" + activity.getProject() + "</b>" \
-                                                     " after <b>" + util::time::format_duration(duration, false) + "</b>.<br/>" \
-                                                     "This week: <b>" + util::time::format_duration(thisWeek, false) + "</b>.").c_str(),
-                                                    NOTIFY_ICON);
+    if (!isQuiet()) {
+        NotifyNotification *n = notify_notification_new("Activity stopped",
+                                                        ("Stopped <b>" + activity.getProject() + "</b>" \
+                                                     " after <b>" + util::time::format_duration(duration, false) +
+                                                         "</b>.<br/>" \
+                                                     "This week: <b>" + util::time::format_duration(thisWeek, false) +
+                                                         "</b>.").c_str(),
+                                                        NOTIFY_ICON);
 
-    notify_notification_set_timeout(n, 5000); // 10 seconds
-    notify_notification_show(n, 0);
+        notify_notification_set_timeout(n, 5000); // 10 seconds
+        notify_notification_show(n, 0);
+    }
+
 }
 
 std::map<std::string, sdbus::Variant> dbus::Tracker::status() {
@@ -142,8 +160,12 @@ std::map<std::string, sdbus::Variant> dbus::Tracker::status() {
     return output;
 }
 
-dbus::Tracker::~Tracker() {
-    if (_current.has_value()) {
-        stop();
-    }
+
+
+bool dbus::Tracker::isQuiet() const {
+    return _quiet;
+}
+
+void dbus::Tracker::setQuiet(bool quiet) {
+    _quiet = quiet;
 }

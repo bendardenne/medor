@@ -42,6 +42,8 @@ int main(int argc, char **argv) {
         } else if (cmd == "report") {
             // TODO get from arguments somehow
             cli.report(pt::time_period(pt::second_clock::local_time(), pt::second_clock::local_time()));
+        } else if (cmd == "quiet") {
+            cli.setQuiet(std::string(argv[2]) == "on");
         }
     } catch (sdbus::Error &e) {
         std::cerr << "Medor is not running" << std::endl;

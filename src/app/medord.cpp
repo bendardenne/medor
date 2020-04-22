@@ -66,6 +66,7 @@ int main(int argc, char **argv) {
     dbus::Tracker tracker(*connection, vm["database"].as<std::string>());
 
     signal(SIGTERM, signal_handler);
+    signal(SIGINT, signal_handler);
 
     // Run the event loop asynchronously. We want to keep control to run some periodic checks.
     connection->enterEventLoopAsync();
