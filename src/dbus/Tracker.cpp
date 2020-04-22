@@ -14,8 +14,8 @@
 
 using namespace medor;
 
-dbus::Tracker::Tracker(sdbus::IConnection &connection, const std::string &database_file) :
-        _database(database_file, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE),
+dbus::Tracker::Tracker(sdbus::IConnection &connection, sqlite3* db_connection) :
+        _database(db_connection),
         _dbus_object(sdbus::createObject(connection, D_TRACKER_OBJECT)) {
     namespace ph = std::placeholders;
 

@@ -29,7 +29,7 @@ mark_as_advanced(
 
 file(GLOB HEADER_LIST CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/include/dbus/*.h")
 
-add_library(dbus STATIC CLI.cpp Tracker.cpp ${HEADER_LIST})
+add_library(dbus STATIC CLI.cpp Tracker.cpp VcsTracker.cpp ${HEADER_LIST})
 
 set(Boost_USE_STATIC_LIBS ON)
 set(Boost_LIB_PREFIX "lib")

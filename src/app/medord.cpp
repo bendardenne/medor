@@ -4,9 +4,11 @@
 #include <pwd.h>
 
 #include <boost/program_options.hpp>
+#include <boost/filesystem.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <sdbus-c++/sdbus-c++.h>
 #include <libnotify/notification.h>
+#include <dbus/VcsTracker.h>
 
 
 #include "../include/dbus/Constants.h"
@@ -16,12 +18,14 @@
 using namespace medor;
 namespace po = boost::program_options;
 namespace pt = boost::posix_time;
+namespace fs = boost::filesystem;
 
-std::unique_ptr<sdbus::IConnection> connection;
+
+std::unique_ptr<sdbus::IConnection> dbus_connection;
 bool running = true;
 
 void signal_handler(int signum) {
-    connection->leaveEventLoop();
+    dbus_connection->leaveEventLoop();
     running = false;
 }
 
@@ -60,16 +64,24 @@ int main(int argc, char **argv) {
         //TODO
     }
 
-    connection = sdbus::createSystemBusConnection(D_SERVICE_NAME);
+    dbus_connection = sdbus::createSystemBusConnection(D_SERVICE_NAME);
 
+    std::string database_file = vm["database"].as<std::string>();
+
+    fs::path path(database_file);
+    fs::create_directories(path.parent_path());
+
+    sqlite3 *db_connection;
+    sqlite3_open_v2(database_file.c_str(), &db_connection, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, nullptr);
     // Start the tracker.
-    dbus::Tracker tracker(*connection, vm["database"].as<std::string>());
+    dbus::Tracker tracker(*dbus_connection, db_connection);
+    dbus::VcsTracker vcsTracker(*dbus_connection, db_connection);
 
     signal(SIGTERM, signal_handler);
     signal(SIGINT, signal_handler);
 
     // Run the event loop asynchronously. We want to keep control to run some periodic checks.
-    connection->enterEventLoopAsync();
+    dbus_connection->enterEventLoopAsync();
 
     unsigned int hoursOnProject = 0;
     while (running) {
@@ -94,6 +106,8 @@ int main(int argc, char **argv) {
             }
         }
     }
+
+    int ret = sqlite3_close(db_connection);
 
     return 0;
 }

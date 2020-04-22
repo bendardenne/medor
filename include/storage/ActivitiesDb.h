@@ -2,19 +2,17 @@
 // Created by bdardenn on 4/15/20.
 //
 
-#ifndef MEDOR_DB_H
-#define MEDOR_DB_H
+#ifndef MEDOR_ACTIVITIESDB_H
+#define MEDOR_ACTIVITIESDB_H
 
 #include <string>
 #include <sqlite3.h>
 #include <model/Activity.h>
 
 namespace medor::storage {
-    class DB {
+    class ActivitiesDb {
     public:
-        explicit DB(const std::string& database_file, int mode);
-
-        ~DB();
+        explicit ActivitiesDb(sqlite3* db_connection);
 
         void add(const medor::model::Activity& activity);
 
@@ -27,11 +25,9 @@ namespace medor::storage {
     private:
         static void inline checkError(int errorCode);
 
-        void setupDb();
-
-        sqlite3 *db;
+        sqlite3 *_db;
     };
 }
 
 
-#endif //MEDOR_DB_H
+#endif //MEDOR_ACTIVITIESDB_H

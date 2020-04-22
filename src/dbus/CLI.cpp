@@ -16,8 +16,8 @@ using namespace medor;
 
 namespace greg = boost::gregorian;
 
-dbus::CLI::CLI(const std::string &database_file) : _database(database_file, SQLITE_OPEN_READONLY),
-                                                   _trackerProxy(sdbus::createProxy(D_SERVICE_NAME, D_TRACKER_OBJECT)) {
+dbus::CLI::CLI(sqlite3 *db_connection) : _database(db_connection),
+                                         _trackerProxy(sdbus::createProxy(D_SERVICE_NAME, D_TRACKER_OBJECT)) {
 }
 
 void dbus::CLI::start(const std::string &activity) {

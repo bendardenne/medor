@@ -25,8 +25,12 @@ int main(int argc, char **argv) {
     }
     std::string db_file = homedir + "/.config/medor/activities.db";
 
+    sqlite3 *db_connection;
+    sqlite3_open_v2(db_file.c_str(), &db_connection, SQLITE_OPEN_READONLY, nullptr);
+
     try {
-        dbus::CLI cli(db_file);
+
+        dbus::CLI cli(db_connection);
 
         if (cmd == "start") {
             cli.start(argv[2]);
