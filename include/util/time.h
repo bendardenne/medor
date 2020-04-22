@@ -7,6 +7,9 @@
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 
+#include "model/Activity.h"
+
+using namespace medor;
 namespace medor::util::time {
 namespace pt = boost::posix_time;
 namespace greg = boost::gregorian;

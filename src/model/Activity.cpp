@@ -1,19 +1,21 @@
 //
 // Created by bdardenn on 4/15/20.
 //
-
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time/time_clock.hpp>
 
 #include "model/Activity.h"
 
 using namespace medor::model;
+namespace pt = boost::posix_time;
+
 
 Activity::Activity(std::string project, pt::ptime start_time, pt::ptime end_time)
     : _project(std::move(project)), _start(start_time), _end(end_time) {}
 
 Activity::Activity(std::string project, pt::ptime start_time) : _project(std::move(project)), _start(start_time) {}
 
-Activity::Activity(std::string project) : Activity(std::move(project), pt::second_clock::local_time()) {}
+Activity::Activity(const std::string& project) : Activity(std::move(project), pt::second_clock::local_time()) {}
 
 std::string Activity::getProject() const { return _project; }
 

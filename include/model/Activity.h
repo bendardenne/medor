@@ -5,6 +5,7 @@
 #ifndef MEDOR_ACTIVITY_H
 #define MEDOR_ACTIVITY_H
 
+#include <string>
 #include <boost/date_time/posix_time/ptime.hpp>
 
 namespace pt = boost::posix_time;
@@ -13,7 +14,7 @@ namespace medor::model {
 
 class Activity {
   public:
-    explicit Activity(std::string project);
+    explicit Activity(const std::string& project);
 
     Activity(std::string project, pt::ptime start_time);
 
