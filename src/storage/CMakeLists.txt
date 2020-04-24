@@ -7,7 +7,7 @@ include_directories(${SQLite3_INCLUDE_DIRS})
 
 file(GLOB HEADER_LIST CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/include/storage/*.h")
 
-add_library(storage STATIC ${HEADER_LIST} ActivitiesDb.cpp VcsDb.cpp ../../include/storage/ActivitiesDb.h)
+add_library(storage STATIC ${HEADER_LIST} ActivityStore.cpp VcsStore.cpp ../../include/storage/ActivityStore.h)
 target_link_libraries(storage model util ${SQLite3_LIBRARIES}  ${Boost_LIBRARIES})
 
 target_include_directories(storage PUBLIC ${CMAKE_SOURCE_DIR}/include)

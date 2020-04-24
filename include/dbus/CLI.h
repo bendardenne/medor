@@ -7,14 +7,14 @@
 
 #include <boost/date_time/posix_time/time_period.hpp>
 
-#include "storage/ActivitiesDb.h"
+#include "storage/ActivityStore.h"
 
 namespace medor::dbus {
 namespace pt = boost::posix_time;
 
 class CLI {
   public:
-    explicit CLI(sqlite3* db_connection);
+    explicit CLI(storage::ActivityStore activityStore);
 
     void start(const std::string& activity);
 
@@ -31,7 +31,7 @@ class CLI {
     void setQuiet(bool quiet);
 
   private:
-    medor::storage::ActivitiesDb _database;
+    medor::storage::ActivityStore _activityStore;
     std::unique_ptr<sdbus::IProxy> _trackerProxy;
 };
 } // namespace medor::dbus

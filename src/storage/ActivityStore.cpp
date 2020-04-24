@@ -8,17 +8,17 @@
 #include <boost/format.hpp>
 
 #include "model/Activity.h"
-#include "storage/ActivitiesDb.h"
+#include "storage/ActivityStore.h"
 #include "util/database.h"
 
 using namespace medor;
 namespace pt = boost::posix_time;
 
-storage::ActivitiesDb::ActivitiesDb(sqlite3* db_connection) : _db(db_connection) {
+storage::ActivityStore::ActivityStore(sqlite3* db_connection) : _db(db_connection) {
     util::database::createTables(db_connection);
 }
 
-void storage::ActivitiesDb::add(const model::Activity& activity) {
+void storage::ActivityStore::add(const model::Activity& activity) {
     std::string project = activity.getProject();
 
     sqlite3_stmt* _getProjectId;
@@ -56,7 +56,7 @@ void storage::ActivitiesDb::add(const model::Activity& activity) {
     sqlite3_finalize(_newActivity);
 }
 
-std::vector<std::string> storage::ActivitiesDb::getProjects() {
+std::vector<std::string> storage::ActivityStore::getProjects() {
     std::vector<std::string> projects;
 
     sqlite3_stmt* _getProjects;
@@ -75,7 +75,7 @@ std::vector<std::string> storage::ActivitiesDb::getProjects() {
     return projects;
 }
 
-std::vector<medor::model::Activity> storage::ActivitiesDb::getActivities(std::string project, pt::time_period period) {
+std::vector<medor::model::Activity> storage::ActivityStore::getActivities(std::string project, pt::time_period period) {
     std::vector<medor::model::Activity> ret;
 
     std::string period_start = pt::to_iso_extended_string(period.begin());
@@ -104,7 +104,7 @@ std::vector<medor::model::Activity> storage::ActivitiesDb::getActivities(std::st
     return ret;
 }
 
-std::vector<medor::model::Activity> storage::ActivitiesDb::getActivities(pt::time_period period) {
+std::vector<medor::model::Activity> storage::ActivityStore::getActivities(pt::time_period period) {
     std::vector<medor::model::Activity> ret;
 
     std::string period_start = pt::to_iso_extended_string(period.begin());

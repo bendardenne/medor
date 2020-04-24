@@ -13,8 +13,8 @@
 
 using namespace medor;
 
-dbus::Tracker::Tracker(sdbus::IConnection& connection, sqlite3* db_connection)
-    : _database(db_connection), _dbus_object(sdbus::createObject(connection, D_TRACKER_OBJECT)) {
+dbus::Tracker::Tracker(sdbus::IConnection& connection, storage::ActivityStore activityStore)
+    : _activities(activityStore), _dbusObject(sdbus::createObject(connection, D_TRACKER_OBJECT)) {
     namespace ph = std::placeholders;
 
     notify_init("medor");
@@ -26,21 +26,21 @@ dbus::Tracker::Tracker(sdbus::IConnection& connection, sqlite3* db_connection)
     std::function<bool()> isQuiet = std::bind(&Tracker::isQuiet, this);
     std::function<void(bool)> setQuiet = std::bind(&Tracker::setQuiet, this, ph::_1);
 
-    _dbus_object->registerMethod("start").onInterface(D_TRACKER_INTERFACE).implementedAs(start);
+    _dbusObject->registerMethod("start").onInterface(D_TRACKER_INTERFACE).implementedAs(start);
 
-    _dbus_object->registerMethod("stop").onInterface(D_TRACKER_INTERFACE).implementedAs(stop);
+    _dbusObject->registerMethod("stop").onInterface(D_TRACKER_INTERFACE).implementedAs(stop);
 
-    _dbus_object->registerMethod("resume").onInterface(D_TRACKER_INTERFACE).implementedAs(resume);
+    _dbusObject->registerMethod("resume").onInterface(D_TRACKER_INTERFACE).implementedAs(resume);
 
-    _dbus_object->registerSignal("started").onInterface(D_TRACKER_INTERFACE).withParameters({"project"});
+    _dbusObject->registerSignal("started").onInterface(D_TRACKER_INTERFACE).withParameters({"project"});
 
-    _dbus_object->registerSignal("stopped").onInterface(D_TRACKER_INTERFACE).withParameters({"project"});
+    _dbusObject->registerSignal("stopped").onInterface(D_TRACKER_INTERFACE).withParameters({"project"});
 
-    _dbus_object->registerProperty("status").onInterface(D_TRACKER_INTERFACE).withGetter(status);
+    _dbusObject->registerProperty("status").onInterface(D_TRACKER_INTERFACE).withGetter(status);
 
-    _dbus_object->registerProperty("quiet").onInterface(D_TRACKER_INTERFACE).withGetter(isQuiet).withSetter(setQuiet);
+    _dbusObject->registerProperty("quiet").onInterface(D_TRACKER_INTERFACE).withGetter(isQuiet).withSetter(setQuiet);
 
-    _dbus_object->finishRegistration();
+    _dbusObject->finishRegistration();
 }
 
 dbus::Tracker::~Tracker() {
@@ -62,7 +62,7 @@ void dbus::Tracker::start(std::string project) {
 void dbus::Tracker::stop() {
     if (this->_current) {
         this->_current->setEnd(pt::second_clock::local_time());
-        _database.add(this->_current.value());
+        _activities.add(this->_current.value());
 
         this->stopped();
     }
@@ -75,26 +75,25 @@ void dbus::Tracker::resume() {
         return; // do nothing
     }
 
-    std::string lastProject = this->_database.getProjects()[0];
+    std::string lastProject = this->_activities.getProjects()[0];
     this->start(lastProject);
 }
 
 void dbus::Tracker::started() {
     model::Activity activity = this->_current.value();
 
-    _dbus_object->emitSignal("started").onInterface(D_TRACKER_INTERFACE).withArguments(activity.getProject());
+    _dbusObject->emitSignal("started").onInterface(D_TRACKER_INTERFACE).withArguments(activity.getProject());
 }
 
 void dbus::Tracker::stopped() {
     model::Activity activity = this->_current.value();
 
-    _dbus_object->emitSignal("stopped").onInterface(D_TRACKER_INTERFACE).withArguments(activity.getProject());
+    _dbusObject->emitSignal("stopped").onInterface(D_TRACKER_INTERFACE).withArguments(activity.getProject());
 
     pt::time_period period(activity.getStart(), activity.getEnd());
     pt::time_duration duration = period.length();
 
-    std::vector<model::Activity> activities =
-        _database.getActivities(activity.getProject(), util::time::week_from_now(0));
+    std::vector<model::Activity> activities = _activities.getActivities(activity.getProject(), util::time::week_from_now(0));
 
     pt::time_duration thisWeek = util::time::aggregateTimes(activities);
 
@@ -121,8 +120,7 @@ std::map<std::string, sdbus::Variant> dbus::Tracker::status() {
     if (_current.has_value()) {
         model::Activity activity = _current.value();
 
-        std::vector<model::Activity> activities =
-            _database.getActivities(activity.getProject(), util::time::week_from_now(0));
+        std::vector<model::Activity> activities = _activities.getActivities(activity.getProject(), util::time::week_from_now(0));
 
         pt::time_duration thisWeek = util::time::aggregateTimes(activities);
 

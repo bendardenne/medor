@@ -2,8 +2,8 @@
 // Created by bdardenn on 4/15/20.
 //
 
-#ifndef MEDOR_ACTIVITIESDB_H
-#define MEDOR_ACTIVITIESDB_H
+#ifndef MEDOR_ACTIVITYSTORE_H
+#define MEDOR_ACTIVITYSTORE_H
 
 #include <sqlite3.h>
 #include <string>
@@ -11,9 +11,9 @@
 #include "model/Activity.h"
 
 namespace medor::storage {
-class ActivitiesDb {
+class ActivityStore {
   public:
-    explicit ActivitiesDb(sqlite3* db_connection);
+    explicit ActivityStore(sqlite3* db_connection);
 
     void add(const medor::model::Activity& activity);
 
@@ -30,4 +30,4 @@ class ActivitiesDb {
 };
 } // namespace medor::storage
 
-#endif // MEDOR_ACTIVITIESDB_H
+#endif // MEDOR_ACTIVITYSTORE_H

@@ -18,11 +18,11 @@ namespace po = boost::program_options;
 namespace pt = boost::posix_time;
 namespace fs = boost::filesystem;
 
-std::unique_ptr<sdbus::IConnection> dbus_connection;
+std::unique_ptr<sdbus::IConnection> dbusConnection;
 bool running = true;
 
 void signal_handler(int signum) {
-    dbus_connection->leaveEventLoop();
+    dbusConnection->leaveEventLoop();
     running = false;
 }
 
@@ -59,7 +59,7 @@ int main(int argc, char** argv) {
         // TODO
     }
 
-    dbus_connection = sdbus::createSystemBusConnection(D_SERVICE_NAME);
+    dbusConnection = sdbus::createSystemBusConnection(D_SERVICE_NAME);
 
     std::string database_file = vm["database"].as<std::string>();
 
@@ -68,16 +68,20 @@ int main(int argc, char** argv) {
 
     sqlite3* db_connection;
     sqlite3_open_v2(database_file.c_str(), &db_connection, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, nullptr);
+
+    storage::ActivityStore activityStore(db_connection);
+    storage::VcsStore vcsStore(db_connection);
+
     // Start the tracker.
-    dbus::Tracker tracker(*dbus_connection, db_connection);
-    dbus::VcsTracker vcsTracker(*dbus_connection, db_connection);
+    dbus::Tracker tracker(*dbusConnection, activityStore);
+    dbus::VcsTracker vcsTracker(*dbusConnection, vcsStore);
 
     signal(SIGTERM, signal_handler);
     signal(SIGINT, signal_handler);
 
     // Run the event loop asynchronously. We want to keep control to run some
     // periodic checks.
-    dbus_connection->enterEventLoopAsync();
+    dbusConnection->enterEventLoopAsync();
 
     unsigned int hoursOnProject = 0;
     while (running) {

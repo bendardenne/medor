@@ -9,13 +9,13 @@
 #include <sdbus-c++/sdbus-c++.h>
 
 #include "model/Activity.h"
-#include "storage/ActivitiesDb.h"
+#include "storage/ActivityStore.h"
 
 namespace medor::dbus {
 
 class Tracker {
   public:
-    Tracker(sdbus::IConnection& connection, sqlite3* database_file);
+    Tracker(sdbus::IConnection& connection, storage::ActivityStore activity_store);
 
     ~Tracker();
 
@@ -51,8 +51,8 @@ class Tracker {
 
     void stopped();
 
-    storage::ActivitiesDb _database;
-    std::unique_ptr<sdbus::IObject> _dbus_object{};
+    storage::ActivityStore _activities;
+    std::unique_ptr<sdbus::IObject> _dbusObject{};
     std::optional<model::Activity> _current;
     bool _quiet = false;
 };
