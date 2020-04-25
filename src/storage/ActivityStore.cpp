@@ -19,30 +19,7 @@ storage::ActivityStore::ActivityStore(sqlite3* dbConnection) : _db(dbConnection)
 }
 
 void storage::ActivityStore::add(const model::Activity& activity) {
-    std::string project = activity.getProject();
-
-    sqlite3_stmt* getProjectId;
-    sqlite3_prepare_v2(_db, "select id from projects where name like ?", -1, &getProjectId, 0);
-    sqlite3_bind_text(getProjectId, 1, project.c_str(), project.length(), SQLITE_STATIC);
-
-    std::optional<int> id;
-    if (sqlite3_step(getProjectId) == SQLITE_ROW) { // While query has result-rows.
-        int result = sqlite3_column_int(getProjectId, 0);
-        id = result;
-    }
-
-    if (!id.has_value()) {
-        sqlite3_stmt* newProject;
-        sqlite3_prepare_v2(_db, "insert into projects (name) values (?)", -1, &newProject, 0);
-        sqlite3_bind_text(newProject, 1, project.c_str(), project.length(), SQLITE_STATIC);
-        sqlite3_step(newProject);
-        sqlite3_step(getProjectId);
-        id = sqlite3_column_int(getProjectId, 0);
-        sqlite3_finalize(newProject);
-    }
-    sqlite3_finalize(getProjectId);
-
-    assert(id.has_value());
+    model::Project project = activity.getProject();
 
     const std::string startString = pt::to_iso_extended_string(activity.getStart());
     const std::string endString = pt::to_iso_extended_string(activity.getEnd());
@@ -51,7 +28,7 @@ void storage::ActivityStore::add(const model::Activity& activity) {
     sqlite3_prepare_v2(_db, "insert into activities (start, end, project_id) values (?,?,?)", -1, &newActivity, 0);
     sqlite3_bind_text(newActivity, 1, startString.c_str(), startString.length(), SQLITE_STATIC);
     sqlite3_bind_text(newActivity, 2, endString.c_str(), endString.length(), SQLITE_STATIC);
-    sqlite3_bind_int(newActivity, 3, id.value());
+    sqlite3_bind_int(newActivity, 3, project.id);
     sqlite3_step(newActivity);
     sqlite3_finalize(newActivity);
 }
@@ -75,7 +52,8 @@ std::vector<std::string> storage::ActivityStore::getProjects() {
     return projects;
 }
 
-std::vector<medor::model::Activity> storage::ActivityStore::getActivities(std::string project, pt::time_period period) {
+std::vector<medor::model::Activity> storage::ActivityStore::getActivities(const model::Project& project,
+                                                                          pt::time_period period) {
     std::vector<medor::model::Activity> ret;
 
     std::string periodStart = pt::to_iso_extended_string(period.begin());
@@ -83,11 +61,13 @@ std::vector<medor::model::Activity> storage::ActivityStore::getActivities(std::s
 
     sqlite3_stmt* projectInPeriod;
     sqlite3_prepare_v2(_db,
-                       "select start,end,name from activities inner join "
+                       "select start,end,name,project_id from activities inner join "
                        "projects on project_id = projects.id"
-                       " where projects.name = ? and start between ? and ? ",
-                       -1, &projectInPeriod, 0);
-    sqlite3_bind_text(projectInPeriod, 1, project.c_str(), project.length(), SQLITE_STATIC);
+                       " where projects.id = ? and start between ? and ? ",
+                       -1,
+                       &projectInPeriod,
+                       nullptr);
+    sqlite3_bind_int(projectInPeriod, 1, project.id);
     sqlite3_bind_text(projectInPeriod, 2, periodStart.c_str(), periodStart.length(), SQLITE_STATIC);
     sqlite3_bind_text(projectInPeriod, 3, periodEnd.c_str(), periodEnd.length(), SQLITE_STATIC);
 
@@ -95,9 +75,10 @@ std::vector<medor::model::Activity> storage::ActivityStore::getActivities(std::s
         const char* start = reinterpret_cast<const char*>(sqlite3_column_text(projectInPeriod, 0));
         const char* end = reinterpret_cast<const char*>(sqlite3_column_text(projectInPeriod, 1));
         const char* name = reinterpret_cast<const char*>(sqlite3_column_text(projectInPeriod, 2));
+        int projectId = sqlite3_column_int(projectInPeriod, 3);
 
-        ret.emplace_back(
-            medor::model::Activity(name, pt::from_iso_extended_string(start), pt::from_iso_extended_string(end)));
+        ret.emplace_back(model::Activity(
+            {.id = projectId, .name = name}, pt::from_iso_extended_string(start), pt::from_iso_extended_string(end)));
     }
 
     sqlite3_finalize(projectInPeriod);
@@ -112,7 +93,7 @@ std::vector<medor::model::Activity> storage::ActivityStore::getActivities(pt::ti
 
     sqlite3_stmt* activitiesInPeriod;
     sqlite3_prepare_v2(_db,
-                       "select start,end,name from activities inner join "
+                       "select start,end,name,project_id from activities inner join "
                        "projects on project_id = projects.id"
                        " where start between ? and ? ",
                        -1, &activitiesInPeriod, 0);
@@ -123,11 +104,33 @@ std::vector<medor::model::Activity> storage::ActivityStore::getActivities(pt::ti
         const char* start = reinterpret_cast<const char*>(sqlite3_column_text(activitiesInPeriod, 0));
         const char* end = reinterpret_cast<const char*>(sqlite3_column_text(activitiesInPeriod, 1));
         const char* name = reinterpret_cast<const char*>(sqlite3_column_text(activitiesInPeriod, 2));
+        int projectId = sqlite3_column_int(activitiesInPeriod, 3);
 
-        ret.emplace_back(
-            medor::model::Activity(name, pt::from_iso_extended_string(start), pt::from_iso_extended_string(end)));
+        ret.emplace_back(model::Activity(
+            {.id = projectId, .name = name}, pt::from_iso_extended_string(start), pt::from_iso_extended_string(end)));
     }
 
     sqlite3_finalize(activitiesInPeriod);
     return ret;
+}
+int storage::ActivityStore::getIdForProject(const std::string& projectName) {
+    sqlite3_stmt* getProjectId;
+    sqlite3_prepare_v2(_db, "select id from projects where name like ?", -1, &getProjectId, 0);
+    sqlite3_bind_text(getProjectId, 1, projectName.c_str(), projectName.length(), SQLITE_STATIC);
+
+    if (sqlite3_step(getProjectId) == SQLITE_ROW) { // While query has result-rows.
+        int result = sqlite3_column_int(getProjectId, 0);
+        sqlite3_finalize(getProjectId);
+        return result;
+    }
+
+    sqlite3_stmt* newProject;
+    sqlite3_prepare_v2(_db, "insert into projects (name) values (?)", -1, &newProject, 0);
+    sqlite3_bind_text(newProject, 1, projectName.c_str(), projectName.length(), SQLITE_STATIC);
+    sqlite3_step(newProject);
+    sqlite3_step(getProjectId);
+    int id = sqlite3_column_int(getProjectId, 0);
+    sqlite3_finalize(newProject);
+
+    return id;
 }

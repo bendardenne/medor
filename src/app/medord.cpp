@@ -23,13 +23,17 @@ namespace po = boost::program_options;
 namespace pt = boost::posix_time;
 namespace fs = boost::filesystem;
 namespace logging = boost::log;
+namespace sinks = boost::log::sinks;
 
 std::unique_ptr<sdbus::IConnection> dbusConnection;
 bool running = true;
 
-void initLogging(const std::string& logFile) {
+void initLogging(const std::string& logLocation) {
     logging::add_common_attributes();
-    logging::add_file_log(logFile, logging::keywords::format = "[%TimeStamp%]: %Message%");
+    logging::add_file_log(logging::keywords::file_name = logLocation + "medord_%N.log",
+                          logging::keywords::format = "[%TimeStamp%]: %Message%",
+                          logging::keywords::time_based_rotation = sinks::file::rotation_at_time_point(0, 0, 0),
+                          logging::keywords::auto_flush = true);
 }
 
 void signalHandler(int signum) {
@@ -45,12 +49,13 @@ int main(int argc, char** argv) {
         homedir = getpwuid(getuid())->pw_dir;
     }
 
-    initLogging(homedir + "/.config/medor/medord.log");
+    initLogging(homedir + "/.config/medor/");
 
     // Options options to the user in the CLI
     po::options_description options("Options");
     options.add_options()("help,h", "Show this help.")(
-        "database,d", po::value<std::string>()->default_value(homedir + "/.config/medor/activities.db"),
+        "database,d",
+        po::value<std::string>()->default_value(homedir + "/.config/medor/activities.db"),
         "Path to the database file.")("daemon,D", "Fork to the backgroud.");
 
     po::variables_map vm;

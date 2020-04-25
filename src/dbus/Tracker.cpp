@@ -52,13 +52,11 @@ dbus::Tracker::~Tracker() {
 void dbus::Tracker::start(std::string project) {
     // Stop _current project, if any.
     //    boost::log::severity_logger< boost::log::sources::aux::severity_level > log;
-    BOOST_LOG_SEV(logger, Info) << "Activity on " + project + " started";
-
     if (this->_current.has_value()) {
         stop();
     }
 
-    this->_current = model::Activity(std::move(project));
+    this->_current = model::Activity({.id = _activities.getIdForProject(project), .name = project});
     this->started();
 }
 
@@ -85,14 +83,14 @@ void dbus::Tracker::resume() {
 void dbus::Tracker::started() {
     model::Activity activity = this->_current.value();
 
-    _dbusObject->emitSignal("started").onInterface(D_TRACKER_INTERFACE).withArguments(activity.getProject());
-    BOOST_LOG_SEV(logger, Info) << "Activity on " + activity.getProject() + " started";
+    _dbusObject->emitSignal("started").onInterface(D_TRACKER_INTERFACE).withArguments(activity.getProject().name);
+    BOOST_LOG_SEV(logger, Info) << "Activity on " + activity.getProject().name + " started";
 }
 
 void dbus::Tracker::stopped() {
     model::Activity activity = this->_current.value();
 
-    _dbusObject->emitSignal("stopped").onInterface(D_TRACKER_INTERFACE).withArguments(activity.getProject());
+    _dbusObject->emitSignal("stopped").onInterface(D_TRACKER_INTERFACE).withArguments(activity.getProject().name);
 
     pt::time_period period(activity.getStart(), activity.getEnd());
     pt::time_duration duration = period.length();
@@ -102,10 +100,10 @@ void dbus::Tracker::stopped() {
 
     pt::time_duration thisWeek = util::time::aggregateTimes(activities);
 
-    BOOST_LOG_SEV(logger, Info) << "Activity on " + activity.getProject() + " stopped";
+    BOOST_LOG_SEV(logger, Info) << "Activity on " + activity.getProject().name + " stopped";
     if (!isQuiet()) {
         NotifyNotification* n = notify_notification_new("Activity stopped",
-                                                        ("Stopped <b>" + activity.getProject() +
+                                                        ("Stopped <b>" + activity.getProject().name +
                                                          "</b>"
                                                          " after <b>" +
                                                          util::time::format_duration(duration, false) +
@@ -126,7 +124,8 @@ std::map<std::string, sdbus::Variant> dbus::Tracker::status() {
     if (_current.has_value()) {
         model::Activity activity = _current.value();
 
-        std::vector<model::Activity> activities = _activities.getActivities(activity.getProject(), util::time::week_from_now(0));
+        std::vector<model::Activity> activities =
+            _activities.getActivities(activity.getProject(), util::time::week_from_now(0));
 
         pt::time_duration thisWeek = util::time::aggregateTimes(activities);
 
@@ -136,7 +135,7 @@ std::map<std::string, sdbus::Variant> dbus::Tracker::status() {
 
         thisWeek += currentDuration;
 
-        output["project"] = activity.getProject();
+        output["project"] = activity.getProject().name;
         output["start"] = pt::to_iso_string(activity.getStart());
         output["weekly"] = thisWeek.total_seconds();
     }

@@ -3,21 +3,21 @@
 //
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time/time_clock.hpp>
+#include <utility>
 
 #include "model/Activity.h"
 
 using namespace medor::model;
 namespace pt = boost::posix_time;
 
+Activity::Activity(Project project) : Activity(std::move(project), pt::second_clock::local_time()) {}
 
-Activity::Activity(std::string project, pt::ptime start_time, pt::ptime end_time)
-    : _project(std::move(project)), _start(start_time), _end(end_time) {}
+Activity::Activity(Project project, pt::ptime startTime, pt::ptime endTime)
+    : _project(std::move(project)), _start(startTime), _end(endTime) {}
 
-Activity::Activity(std::string project, pt::ptime start_time) : _project(std::move(project)), _start(start_time) {}
+Activity::Activity(Project project, pt::ptime startTime) : _project(std::move(project)), _start(startTime) {}
 
-Activity::Activity(const std::string& project) : Activity(std::move(project), pt::second_clock::local_time()) {}
-
-std::string Activity::getProject() const { return _project; }
+Project Activity::getProject() const { return _project; }
 
 pt::ptime Activity::getStart() const { return _start; }
 
@@ -26,6 +26,6 @@ pt::ptime Activity::getEnd() const { return _end; }
 void Activity::setEnd(const pt::ptime& end) { _end = end; }
 
 std::ostream& medor::model::operator<<(std::ostream& out, const Activity& activity) {
-    out << activity.getProject() << "\t\t[" << activity.getStart() << " - " << activity.getEnd() << "]";
+    out << activity.getProject().name << "\t\t[" << activity.getStart() << " - " << activity.getEnd() << "]";
     return out;
 }

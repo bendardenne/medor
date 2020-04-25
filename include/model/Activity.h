@@ -12,15 +12,20 @@ namespace pt = boost::posix_time;
 
 namespace medor::model {
 
+struct Project {
+    int id;
+    std::string name;
+};
+
 class Activity {
   public:
-    explicit Activity(const std::string& project);
+    explicit Activity(Project project);
 
-    Activity(std::string project, pt::ptime start_time);
+    Activity(Project project, pt::ptime startTime);
 
-    Activity(std::string project, pt::ptime start_time, pt::ptime end_time);
+    Activity(Project project, pt::ptime startTime, pt::ptime endTime);
 
-    std::string getProject() const;
+    Project getProject() const;
 
     pt::ptime getStart() const;
 
@@ -31,7 +36,7 @@ class Activity {
     friend std::ostream& operator<<(std::ostream& out, const Activity& activity);
 
   private:
-    std::string _project;
+    Project _project;
     pt::ptime _start;
     pt::ptime _end;
 };

@@ -19,13 +19,13 @@ class ActivityStore {
 
     std::vector<std::string> getProjects();
 
-    std::vector<medor::model::Activity> getActivities(std::string project, pt::time_period period);
+    std::vector<medor::model::Activity> getActivities(const model::Project& project, pt::time_period period);
 
     std::vector<medor::model::Activity> getActivities(pt::time_period period);
 
-  private:
-    static void inline checkError(int errorCode);
+    int getIdForProject(const std::string& basicString);
 
+  private:
     sqlite3* _db;
 };
 } // namespace medor::storage

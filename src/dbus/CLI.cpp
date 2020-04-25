@@ -68,15 +68,15 @@ void dbus::CLI::report(pt::time_period period) {
 
     for (const auto& forDay : byDay) {
         std::cout << forDay.first.day_of_week().as_long_string() << std::endl;
-        std::map<std::string, std::vector<model::Activity>> byProject;
+        std::map<int, std::vector<model::Activity>> byProject;
 
         for (const auto& activity : forDay.second) {
-            byProject[activity.getProject()].emplace_back(activity);
+            byProject[activity.getProject().id].emplace_back(activity);
         }
 
         for (const auto& project : byProject) {
             const std::string& spentOnProject = util::time::format_duration(util::time::aggregateTimes(project.second), false);
-            std::cout << "\t\t" << project.first << ": " << spentOnProject << std::endl;
+            std::cout << "\t\t" << project.second[0].getProject().name << ": " << spentOnProject << std::endl;
         }
     }
 }
