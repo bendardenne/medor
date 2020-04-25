@@ -51,6 +51,9 @@ dbus::Tracker::~Tracker() {
 
 void dbus::Tracker::start(std::string project) {
     // Stop _current project, if any.
+    //    boost::log::severity_logger< boost::log::sources::aux::severity_level > log;
+    BOOST_LOG_SEV(logger, Info) << "Activity on " + project + " started";
+
     if (this->_current.has_value()) {
         stop();
     }
@@ -83,6 +86,7 @@ void dbus::Tracker::started() {
     model::Activity activity = this->_current.value();
 
     _dbusObject->emitSignal("started").onInterface(D_TRACKER_INTERFACE).withArguments(activity.getProject());
+    BOOST_LOG_SEV(logger, Info) << "Activity on " + activity.getProject() + " started";
 }
 
 void dbus::Tracker::stopped() {
@@ -93,10 +97,12 @@ void dbus::Tracker::stopped() {
     pt::time_period period(activity.getStart(), activity.getEnd());
     pt::time_duration duration = period.length();
 
-    std::vector<model::Activity> activities = _activities.getActivities(activity.getProject(), util::time::week_from_now(0));
+    std::vector<model::Activity> activities =
+        _activities.getActivities(activity.getProject(), util::time::week_from_now(0));
 
     pt::time_duration thisWeek = util::time::aggregateTimes(activities);
 
+    BOOST_LOG_SEV(logger, Info) << "Activity on " + activity.getProject() + " stopped";
     if (!isQuiet()) {
         NotifyNotification* n = notify_notification_new("Activity stopped",
                                                         ("Stopped <b>" + activity.getProject() +

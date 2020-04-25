@@ -9,7 +9,8 @@ add_subdirectory(src/model)
 add_subdirectory(src/storage)
 
 # TODO REQUIRED ?
-find_package(Boost 1.65 COMPONENTS program_options filesystem REQUIRED COMPONENTS date_time)
+add_definitions(-DBOOST_LOG_DYN_LINK)
+find_package(Boost 1.65 REQUIRED program_options filesystem log log_setup date_time)
 
 add_executable(medord src/app/medord.cpp)
 add_executable(medor src/app/medor.cpp)

@@ -5,6 +5,8 @@
 #ifndef MEDOR_VCSSTORE_H
 #define MEDOR_VCSSTORE_H
 
+#include <string>
+
 #include <sqlite3.h>
 
 namespace medor::storage {

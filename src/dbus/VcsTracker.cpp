@@ -15,7 +15,7 @@ dbus::VcsTracker::VcsTracker(sdbus::IConnection& dbusConnection, storage::VcsSto
 
     namespace ph = std::placeholders;
 
-    std::function<void(std::string, std::string)> addRepo = std::bind(&addRepo, this, ph::_1, ph::_2 );
+    std::function<void(std::string, std::string)> addRepo = std::bind(&VcsTracker::addRepo, this, ph::_1, ph::_2);
 
     _dbusObject->registerMethod("addRepo").onInterface(D_VCSTRACKER_INTERFACE).implementedAs(addRepo);
 }

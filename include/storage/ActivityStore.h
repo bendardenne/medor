@@ -13,7 +13,7 @@
 namespace medor::storage {
 class ActivityStore {
   public:
-    explicit ActivityStore(sqlite3* db_connection);
+    explicit ActivityStore(sqlite3* dbConnection);
 
     void add(const medor::model::Activity& activity);
 

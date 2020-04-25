@@ -1,10 +1,15 @@
 #include <csignal>
 #include <iostream>
 #include <pwd.h>
+#include <string>
 #include <unistd.h>
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/log/core.hpp>
+#include <boost/log/expressions.hpp>
+#include <boost/log/utility/setup/common_attributes.hpp>
+#include <boost/log/utility/setup/file.hpp>
 #include <boost/program_options.hpp>
 #include <libnotify/notification.h>
 #include <sdbus-c++/sdbus-c++.h>
@@ -17,11 +22,17 @@ using namespace medor;
 namespace po = boost::program_options;
 namespace pt = boost::posix_time;
 namespace fs = boost::filesystem;
+namespace logging = boost::log;
 
 std::unique_ptr<sdbus::IConnection> dbusConnection;
 bool running = true;
 
-void signal_handler(int signum) {
+void initLogging(const std::string& logFile) {
+    logging::add_common_attributes();
+    logging::add_file_log(logFile, logging::keywords::format = "[%TimeStamp%]: %Message%");
+}
+
+void signalHandler(int signum) {
     dbusConnection->leaveEventLoop();
     running = false;
 }
@@ -33,6 +44,8 @@ int main(int argc, char** argv) {
     if ((homedir = getenv("HOME")).empty()) {
         homedir = getpwuid(getuid())->pw_dir;
     }
+
+    initLogging(homedir + "/.config/medor/medord.log");
 
     // Options options to the user in the CLI
     po::options_description options("Options");
@@ -61,23 +74,23 @@ int main(int argc, char** argv) {
 
     dbusConnection = sdbus::createSystemBusConnection(D_SERVICE_NAME);
 
-    std::string database_file = vm["database"].as<std::string>();
+    std::string databaseFile = vm["database"].as<std::string>();
 
-    fs::path path(database_file);
+    fs::path path(databaseFile);
     fs::create_directories(path.parent_path());
 
-    sqlite3* db_connection;
-    sqlite3_open_v2(database_file.c_str(), &db_connection, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, nullptr);
+    sqlite3* dbConnection;
+    sqlite3_open_v2(databaseFile.c_str(), &dbConnection, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, nullptr);
 
-    storage::ActivityStore activityStore(db_connection);
-    storage::VcsStore vcsStore(db_connection);
+    storage::ActivityStore activityStore(dbConnection);
+    storage::VcsStore vcsStore(dbConnection);
 
     // Start the tracker.
     dbus::Tracker tracker(*dbusConnection, activityStore);
     dbus::VcsTracker vcsTracker(*dbusConnection, vcsStore);
 
-    signal(SIGTERM, signal_handler);
-    signal(SIGINT, signal_handler);
+    signal(SIGTERM, signalHandler);
+    signal(SIGINT, signalHandler);
 
     // Run the event loop asynchronously. We want to keep control to run some
     // periodic checks.
@@ -107,7 +120,7 @@ int main(int argc, char** argv) {
         }
     }
 
-    int ret = sqlite3_close(db_connection);
+    int ret = sqlite3_close(dbConnection);
 
     return 0;
 }

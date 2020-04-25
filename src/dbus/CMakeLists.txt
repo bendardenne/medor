@@ -31,8 +31,12 @@ file(GLOB HEADER_LIST CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/include/dbus/*.h")
 
 add_library(dbus STATIC CLI.cpp Tracker.cpp VcsTracker.cpp ${HEADER_LIST})
 
-set(Boost_USE_STATIC_LIBS ON)
-set(Boost_LIB_PREFIX "lib")
+add_definitions(-DBOOST_ALL_DYN_LINK)
+find_package(Boost 1.65 REQUIRED log_setup log date_time)
+
+
+#set(Boost_USE_STATIC_LIBS ON)
+#set(Boost_LIB_PREFIX "lib")
 target_include_directories(dbus PUBLIC ${CMAKE_SOURCE_DIR}/include ${LIBNOTIFY_INCLUDE_DIRS})
 
-target_link_libraries(dbus PRIVATE util model storage SDBusCpp::sdbus-c++ ${LIBNOTIFY_LIBRARIES})
+target_link_libraries(dbus PRIVATE util model storage SDBusCpp::sdbus-c++ ${LIBNOTIFY_LIBRARIES} ${Boost_LIBRARIES})

@@ -5,17 +5,21 @@
 #ifndef MEDOR_TRACKER_H
 #define MEDOR_TRACKER_H
 
+#include <boost/log/sources/severity_logger.hpp>
+#include <boost/log/trivial.hpp>
 #include <optional>
 #include <sdbus-c++/sdbus-c++.h>
 
 #include "model/Activity.h"
 #include "storage/ActivityStore.h"
+#include "util/logging.h"
 
+namespace logsrc = boost::log::sources;
 namespace medor::dbus {
 
 class Tracker {
   public:
-    Tracker(sdbus::IConnection& connection, storage::ActivityStore activity_store);
+    Tracker(sdbus::IConnection& connection, storage::ActivityStore activityStore);
 
     ~Tracker();
 
@@ -51,6 +55,7 @@ class Tracker {
 
     void stopped();
 
+    logsrc::severity_logger<Severity> logger;
     storage::ActivityStore _activities;
     std::unique_ptr<sdbus::IObject> _dbusObject{};
     std::optional<model::Activity> _current;
