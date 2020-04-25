@@ -8,7 +8,6 @@ add_subdirectory(src/dbus)
 add_subdirectory(src/model)
 add_subdirectory(src/storage)
 
-# TODO REQUIRED ?
 add_definitions(-DBOOST_LOG_DYN_LINK)
 find_package(Boost 1.65 REQUIRED program_options filesystem log log_setup date_time)
 

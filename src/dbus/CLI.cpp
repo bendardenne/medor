@@ -16,16 +16,20 @@ using namespace medor;
 
 namespace greg = boost::gregorian;
 
-dbus::CLI::CLI(storage::ActivityStore activityStore) : _activityStore(activityStore), _trackerProxy(sdbus::createProxy(D_SERVICE_NAME, D_TRACKER_OBJECT)) {}
+dbus::CLI::CLI(storage::ActivityStore activityStore)
+    : _activityStore(activityStore), _trackerProxy(sdbus::createProxy(D_SERVICE_NAME, D_TRACKER_OBJECT)) {}
 
-void dbus::CLI::start(const std::string& activity) { _trackerProxy->callMethod("start").onInterface(D_TRACKER_INTERFACE).withArguments(activity); }
+void dbus::CLI::start(const std::string& activity) {
+    _trackerProxy->callMethod("start").onInterface(D_TRACKER_INTERFACE).withArguments(activity);
+}
 
 void dbus::CLI::stop() { _trackerProxy->callMethod("stop").onInterface(D_TRACKER_INTERFACE); }
 
 void dbus::CLI::resume() { _trackerProxy->callMethod("resume").onInterface(D_TRACKER_INTERFACE); }
 
 void dbus::CLI::status(std::string format) {
-    std::map<std::string, sdbus::Variant> status = _trackerProxy->getProperty("status").onInterface(D_TRACKER_INTERFACE);
+    std::map<std::string, sdbus::Variant> status =
+        _trackerProxy->getProperty("status").onInterface(D_TRACKER_INTERFACE);
 
     if (status.count("project") > 0) {
         pt::ptime start = pt::from_iso_string(status["start"].get<std::string>());
@@ -34,6 +38,7 @@ void dbus::CLI::status(std::string format) {
 
         pt::time_duration weekly = pt::seconds(status["weekly"].get<long>());
 
+        boost::algorithm::replace_all(format, "%i", std::to_string(status["project_id"].get<int>()));
         boost::algorithm::replace_all(format, "%p", status["project"].get<std::string>());
         boost::algorithm::replace_all(format, "%d", util::time::format_duration(period.length(), true));
         boost::algorithm::replace_all(format, "%w", util::time::format_duration(weekly, true));
@@ -56,9 +61,18 @@ void dbus::CLI::projects() {
 }
 
 void dbus::CLI::report(pt::time_period period) {
-    // FIXME doesn't include current activity
     pt::time_period thisWeek = util::time::week_from_now(0);
     std::vector<model::Activity> allActivities = _activityStore.getActivities(thisWeek);
+
+    // Fetch and account for current activity, if any.
+    std::map<std::string, sdbus::Variant> status =
+        _trackerProxy->getProperty("status").onInterface(D_TRACKER_INTERFACE);
+    if (status.count("project") > 0) {
+        model::Project project = {.id = status["project_id"], .name = status["project"]};
+        pt::ptime start = pt::from_iso_string(status["start"].get<std::string>());
+        pt::ptime now = pt::second_clock::local_time();
+        allActivities.emplace_back(model::Activity(project, start, now));
+    }
 
     std::map<greg::date, std::vector<model::Activity>> byDay;
 
@@ -75,10 +89,13 @@ void dbus::CLI::report(pt::time_period period) {
         }
 
         for (const auto& project : byProject) {
-            const std::string& spentOnProject = util::time::format_duration(util::time::aggregateTimes(project.second), false);
+            const std::string& spentOnProject =
+                util::time::format_duration(util::time::aggregateTimes(project.second), false);
             std::cout << "\t\t" << project.second[0].getProject().name << ": " << spentOnProject << std::endl;
         }
     }
 }
 
-void dbus::CLI::setQuiet(bool quiet) { _trackerProxy->setProperty("quiet").onInterface(D_TRACKER_INTERFACE).toValue(quiet); }
+void dbus::CLI::setQuiet(bool quiet) {
+    _trackerProxy->setProperty("quiet").onInterface(D_TRACKER_INTERFACE).toValue(quiet);
+}

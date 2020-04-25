@@ -46,8 +46,8 @@ int main(int argc, char** argv) {
             cli.setQuiet(std::string(argv[2]) == "on");
         }
     } catch (sdbus::Error& e) {
-        std::cerr << "Medor is not running" << std::endl;
-        return -EHOSTDOWN;
+        std::cerr << e.getName() << ": " << e.getMessage() << std::endl;
+        return -EXIT_FAILURE;
     }
 
     return 0;

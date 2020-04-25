@@ -4,6 +4,5 @@ find_package(Boost 1.65 REQUIRED log_setup log date_time)
 add_definitions(-DBOOST_ALL_DYN_LINK)
 
 add_library(util STATIC time.cpp database.cpp ${HEADER_LIST})
-
 target_include_directories(util PUBLIC ${CMAKE_SOURCE_DIR}/include)
 target_link_libraries(util ${Boost_LIBRARIES})

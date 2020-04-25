@@ -135,6 +135,7 @@ std::map<std::string, sdbus::Variant> dbus::Tracker::status() {
 
         thisWeek += currentDuration;
 
+        output["project_id"] = activity.getProject().id;
         output["project"] = activity.getProject().name;
         output["start"] = pt::to_iso_string(activity.getStart());
         output["weekly"] = thisWeek.total_seconds();
