@@ -3,6 +3,7 @@
 //
 #pragma once
 
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <sqlite3.h>
 #include <string>
 
@@ -15,13 +16,12 @@ class ActivityStore {
 
     void add(const medor::model::Activity& activity);
 
-    std::vector<std::string> getProjects();
+    std::vector<std::string> getRecentProjects();
 
     std::vector<medor::model::Activity> getActivities(const model::Project& project, pt::time_period period);
 
     std::vector<medor::model::Activity> getActivities(pt::time_period period);
 
-    int getIdForProject(const std::string& basicString);
 
   private:
     sqlite3* _db;

@@ -10,14 +10,14 @@
 namespace medor::storage {
 class VcsStore {
   public:
-    explicit VcsStore(sqlite3* db_connection);
+    explicit VcsStore(sqlite3* dbConnection);
 
-    void addRepo(std::string repo, std::string project);
+    void addRepo(const std::string& repo, const model::Project& project);
+
+    std::optional<int> getProjectFor(const std::string& repo);
 
   private:
     sqlite3* _db;
-
-    void setupDb();
 };
 
 } // namespace medor::storage

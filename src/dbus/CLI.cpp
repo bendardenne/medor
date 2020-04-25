@@ -17,7 +17,8 @@ using namespace medor;
 namespace greg = boost::gregorian;
 
 dbus::CLI::CLI(storage::ActivityStore activityStore)
-    : _activityStore(activityStore), _trackerProxy(sdbus::createProxy(D_SERVICE_NAME, D_TRACKER_OBJECT)) {}
+    : _activityStore(activityStore), _trackerProxy(sdbus::createProxy(D_SERVICE_NAME, D_TRACKER_OBJECT)),
+      _vcsHinterProxy(sdbus::createProxy(D_SERVICE_NAME, D_VCSHINTER_OBJECT)) {}
 
 void dbus::CLI::start(const std::string& activity) {
     _trackerProxy->callMethod("start").onInterface(D_TRACKER_INTERFACE).withArguments(activity);
@@ -53,7 +54,7 @@ void dbus::CLI::projects() {
     // TODO this does not necessarily include the current project, or it may not
     // be the first of the list.
     //  Maybe not a problem?
-    std::vector<std::string> projects = _activityStore.getProjects();
+    std::vector<std::string> projects = _activityStore.getRecentProjects();
 
     for (const auto& project : projects) {
         std::cout << project << std::endl;
@@ -98,4 +99,7 @@ void dbus::CLI::report(pt::time_period period) {
 
 void dbus::CLI::setQuiet(bool quiet) {
     _trackerProxy->setProperty("quiet").onInterface(D_TRACKER_INTERFACE).toValue(quiet);
+}
+void dbus::CLI::addRepo(std::basic_string<char> project, std::basic_string<char> path) {
+    _vcsHinterProxy->callMethod("addRepo").onInterface(D_VCSHINTER_INTERFACE).withArguments(project, path);
 }

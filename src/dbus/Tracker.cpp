@@ -6,6 +6,7 @@
 #include <boost/date_time/posix_time/posix_time_io.hpp>
 #include <iostream>
 #include <libnotify/notify.h>
+#include <utility>
 
 #include "dbus/Constants.h"
 #include "dbus/Tracker.h"
@@ -13,8 +14,11 @@
 
 using namespace medor;
 
-dbus::Tracker::Tracker(sdbus::IConnection& connection, storage::ActivityStore activityStore)
-    : _activities(activityStore), _dbusObject(sdbus::createObject(connection, D_TRACKER_OBJECT)) {
+dbus::Tracker::Tracker(sdbus::IConnection& connection,
+                       std::shared_ptr<storage::ActivityStore> activityStore,
+                       std::shared_ptr<storage::ProjectStore> projectStore)
+    : _activities(std::move(activityStore)), _projects(std::move(projectStore)),
+      _dbusObject(sdbus::createObject(connection, D_TRACKER_OBJECT)) {
     namespace ph = std::placeholders;
 
     notify_init("medor");
@@ -43,32 +47,25 @@ dbus::Tracker::Tracker(sdbus::IConnection& connection, storage::ActivityStore ac
     _dbusObject->finishRegistration();
 }
 
-dbus::Tracker::~Tracker() {
-    if (_current.has_value()) {
-        stop();
-    }
-}
-
-void dbus::Tracker::start(std::string project) {
+void dbus::Tracker::start(const std::string& project) {
     // Stop _current project, if any.
     //    boost::log::severity_logger< boost::log::sources::aux::severity_level > log;
     if (this->_current.has_value()) {
         stop();
     }
 
-    this->_current = model::Activity({.id = _activities.getIdForProject(project), .name = project});
+    this->_current = model::Activity({.id = _projects->getIdForProject(project), .name = project});
     this->started();
 }
 
 void dbus::Tracker::stop() {
     if (this->_current) {
         this->_current->setEnd(pt::second_clock::local_time());
-        _activities.add(this->_current.value());
+        _activities->add(this->_current.value());
 
         this->stopped();
+        this->_current.reset();
     }
-
-    this->_current.reset();
 }
 
 void dbus::Tracker::resume() {
@@ -76,7 +73,7 @@ void dbus::Tracker::resume() {
         return; // do nothing
     }
 
-    std::string lastProject = this->_activities.getProjects()[0];
+    std::string lastProject = this->_activities->getRecentProjects()[0];
     this->start(lastProject);
 }
 
@@ -96,7 +93,7 @@ void dbus::Tracker::stopped() {
     pt::time_duration duration = period.length();
 
     std::vector<model::Activity> activities =
-        _activities.getActivities(activity.getProject(), util::time::week_from_now(0));
+        _activities->getActivities(activity.getProject(), util::time::week_from_now(0));
 
     pt::time_duration thisWeek = util::time::aggregateTimes(activities);
 
@@ -114,7 +111,7 @@ void dbus::Tracker::stopped() {
                                                         NOTIFY_ICON);
 
         notify_notification_set_timeout(n, 5000); // 10 seconds
-        notify_notification_show(n, 0);
+        notify_notification_show(n, nullptr);
     }
 }
 
@@ -125,7 +122,7 @@ std::map<std::string, sdbus::Variant> dbus::Tracker::status() {
         model::Activity activity = _current.value();
 
         std::vector<model::Activity> activities =
-            _activities.getActivities(activity.getProject(), util::time::week_from_now(0));
+            _activities->getActivities(activity.getProject(), util::time::week_from_now(0));
 
         pt::time_duration thisWeek = util::time::aggregateTimes(activities);
 

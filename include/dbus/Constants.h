@@ -8,7 +8,7 @@
 #define D_TRACKER_OBJECT "/org/medor/tracker"
 #define D_TRACKER_INTERFACE "org.medor.Tracker"
 
-#define D_VCSTRACKER_OBJECT "/org/medor/vcstracker"
-#define D_VCSTRACKER_INTERFACE "org.medor.VcsTracker"
+#define D_VCSHINTER_OBJECT "/org/medor/hinters/vcs"
+#define D_VCSHINTER_INTERFACE "org.medor.hinters.Vcs"
 
 #define NOTIFY_ICON "clock"

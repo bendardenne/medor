@@ -4,7 +4,6 @@
 
 #include <iostream>
 
-#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/format.hpp>
 
 #include "model/Activity.h"
@@ -33,7 +32,7 @@ void storage::ActivityStore::add(const model::Activity& activity) {
     sqlite3_finalize(newActivity);
 }
 
-std::vector<std::string> storage::ActivityStore::getProjects() {
+std::vector<std::string> storage::ActivityStore::getRecentProjects() {
     std::vector<std::string> projects;
 
     sqlite3_stmt* getProjects;
@@ -41,7 +40,11 @@ std::vector<std::string> storage::ActivityStore::getProjects() {
                        "select name from activities join projects on "
                        "activities.project_id = projects.id"
                        " group by projects.id order by start desc limit ?",
-                       -1, &getProjects, 0);
+                       -1,
+                       &getProjects,
+                       0);
+
+    // TODO make limit an argument?
     sqlite3_bind_int(getProjects, 1, 50);
     while (sqlite3_step(getProjects) == SQLITE_ROW) {
         const char* name = reinterpret_cast<const char*>(sqlite3_column_text(getProjects, 0));
@@ -112,25 +115,4 @@ std::vector<medor::model::Activity> storage::ActivityStore::getActivities(pt::ti
 
     sqlite3_finalize(activitiesInPeriod);
     return ret;
-}
-int storage::ActivityStore::getIdForProject(const std::string& projectName) {
-    sqlite3_stmt* getProjectId;
-    sqlite3_prepare_v2(_db, "select id from projects where name like ?", -1, &getProjectId, 0);
-    sqlite3_bind_text(getProjectId, 1, projectName.c_str(), projectName.length(), SQLITE_STATIC);
-
-    if (sqlite3_step(getProjectId) == SQLITE_ROW) { // While query has result-rows.
-        int result = sqlite3_column_int(getProjectId, 0);
-        sqlite3_finalize(getProjectId);
-        return result;
-    }
-
-    sqlite3_stmt* newProject;
-    sqlite3_prepare_v2(_db, "insert into projects (name) values (?)", -1, &newProject, 0);
-    sqlite3_bind_text(newProject, 1, projectName.c_str(), projectName.length(), SQLITE_STATIC);
-    sqlite3_step(newProject);
-    sqlite3_step(getProjectId);
-    int id = sqlite3_column_int(getProjectId, 0);
-    sqlite3_finalize(newProject);
-
-    return id;
 }

@@ -27,6 +27,7 @@ Probably need git and hg third party lib to read the commit history.
 
 
 ## TODO
+* Verify concurrency in SQLite
 * Warnings when stopped on a weekday during workhours?
 * Add a comment field to activities?
 * Interface to edit / delete activities? Add past activities

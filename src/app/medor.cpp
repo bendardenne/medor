@@ -44,6 +44,8 @@ int main(int argc, char** argv) {
             cli.report(pt::time_period(pt::second_clock::local_time(), pt::second_clock::local_time()));
         } else if (cmd == "quiet") {
             cli.setQuiet(std::string(argv[2]) == "on");
+        } else if (cmd == "repo") {
+            cli.addRepo(std::string(argv[2]), std::string(argv[3]));
         }
     } catch (sdbus::Error& e) {
         std::cerr << e.getName() << ": " << e.getMessage() << std::endl;

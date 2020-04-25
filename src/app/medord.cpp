@@ -6,7 +6,6 @@
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/filesystem.hpp>
-#include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>
 #include <boost/log/utility/setup/common_attributes.hpp>
 #include <boost/log/utility/setup/file.hpp>
@@ -16,7 +15,7 @@
 
 #include "dbus/Constants.h"
 #include "dbus/Tracker.h"
-#include "dbus/VcsTracker.h"
+#include "dbus/VcsHinter.h"
 
 using namespace medor;
 namespace po = boost::program_options;
@@ -87,12 +86,13 @@ int main(int argc, char** argv) {
     sqlite3* dbConnection;
     sqlite3_open_v2(databaseFile.c_str(), &dbConnection, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, nullptr);
 
-    storage::ActivityStore activityStore(dbConnection);
-    storage::VcsStore vcsStore(dbConnection);
+    auto activityStore = std::make_shared<storage::ActivityStore>(dbConnection);
+    auto vcsStore = std::make_shared<storage::VcsStore>(dbConnection);
+    auto projectStore = std::make_shared<storage::ProjectStore>(dbConnection);
 
     // Start the tracker.
-    dbus::Tracker tracker(*dbusConnection, activityStore);
-    dbus::VcsTracker vcsTracker(*dbusConnection, vcsStore);
+    auto tracker = std::make_shared<dbus::Tracker>(*dbusConnection, activityStore, projectStore);
+    dbus::VcsHinter vcsHinter(*dbusConnection, tracker, vcsStore, projectStore);
 
     signal(SIGTERM, signalHandler);
     signal(SIGINT, signalHandler);
@@ -104,7 +104,7 @@ int main(int argc, char** argv) {
     unsigned int hoursOnProject = 0;
     while (running) {
         sleep(5);
-        auto status = tracker.status();
+        auto status = tracker->status();
         if (status.count("project") > 0) {
             pt::ptime start = pt::from_iso_string(status["start"].get<std::string>());
             pt::ptime now = pt::second_clock::local_time();
@@ -124,8 +124,7 @@ int main(int argc, char** argv) {
             }
         }
     }
-
+    tracker->stop();
     int ret = sqlite3_close(dbConnection);
-
     return 0;
 }

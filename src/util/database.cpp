@@ -38,7 +38,7 @@ void util::database::createTables(sqlite3* dbConnection) {
     sql = R"sql(
         create table if not exists repos (
                 id integer primary key autoincrement,
-                path text not null,
+                path text not null unique,
                 project_id integer
           );)sql";
 

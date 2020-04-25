@@ -28,8 +28,11 @@ class CLI {
 
     void setQuiet(bool quiet);
 
+    void addRepo(std::basic_string<char> project, std::basic_string<char> path);
+
   private:
     medor::storage::ActivityStore _activityStore;
     std::unique_ptr<sdbus::IProxy> _trackerProxy;
+    std::unique_ptr<sdbus::IProxy> _vcsHinterProxy;
 };
 } // namespace medor::dbus

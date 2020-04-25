@@ -10,6 +10,7 @@
 
 #include "model/Activity.h"
 #include "storage/ActivityStore.h"
+#include "storage/ProjectStore.h"
 #include "util/logging.h"
 
 namespace logsrc = boost::log::sources;
@@ -17,9 +18,9 @@ namespace medor::dbus {
 
 class Tracker {
   public:
-    Tracker(sdbus::IConnection& connection, storage::ActivityStore activityStore);
-
-    ~Tracker();
+    Tracker(sdbus::IConnection& connection,
+            std::shared_ptr<storage::ActivityStore> activityStore,
+            std::shared_ptr<storage::ProjectStore> projectStore);
 
     /**
      * @return The current tracking status. For now, just a string with the active
@@ -27,12 +28,11 @@ class Tracker {
      */
     std::map<std::string, sdbus::Variant> status();
 
-  private:
     /**
      * Starts tracking on a new project. Any current project is stopped.
      * @param project The new project.
      */
-    void start(std::string project);
+    void start(const std::string& project);
 
     /**
      * Stop tracking the active project, if any.
@@ -48,13 +48,16 @@ class Tracker {
 
     void setQuiet(bool quiet);
 
+  private:
     // Signals
     void started();
 
     void stopped();
 
     logsrc::severity_logger<Severity> _logger;
-    storage::ActivityStore _activities;
+    std::shared_ptr<storage::ActivityStore> _activities;
+    std::shared_ptr<storage::ProjectStore> _projects;
+
     std::unique_ptr<sdbus::IObject> _dbusObject{};
     std::optional<model::Activity> _current;
     bool _quiet = false;
