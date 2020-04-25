@@ -22,10 +22,9 @@ dbus::VcsTracker::VcsTracker(sdbus::IConnection& dbusConnection, storage::VcsSto
 
 void dbus::VcsTracker::addRepo(std::string repo, std::string project) {
     _vcsStore.addRepo(std::move(repo), std::move(project));
+    BOOST_LOG_SEV(_logger, Info) << "Added repo for project " + project + ": " + repo;
 }
 
-
 void dbus::VcsTracker::activityOnRepo(std::string repo) {
-    
-
+    BOOST_LOG_SEV(_logger, Info) << "Hint received from repo: " + repo;
 }

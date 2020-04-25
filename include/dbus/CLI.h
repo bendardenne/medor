@@ -1,9 +1,7 @@
 //
 // Created by bdardenn on 4/14/20.
 //
-
-#ifndef MEDOR_CLI_H
-#define MEDOR_CLI_H
+#pragma once
 
 #include <boost/date_time/posix_time/time_period.hpp>
 
@@ -35,5 +33,3 @@ class CLI {
     std::unique_ptr<sdbus::IProxy> _trackerProxy;
 };
 } // namespace medor::dbus
-
-#endif // MEDOR_CLI_H

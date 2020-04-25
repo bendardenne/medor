@@ -1,9 +1,7 @@
 //
 // Created by bdardenn on 4/22/20.
 //
-
-#ifndef MEDOR_DATABASE_H
-#define MEDOR_DATABASE_H
+#pragma once
 
 #include <sqlite3.h>
 
@@ -14,5 +12,3 @@ void createTables(sqlite3* dbConnection);
 void checkError(int ret);
 
 } // namespace medor::util::database
-
-#endif // MEDOR_DATABASE_H

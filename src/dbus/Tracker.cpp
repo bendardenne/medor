@@ -84,7 +84,7 @@ void dbus::Tracker::started() {
     model::Activity activity = this->_current.value();
 
     _dbusObject->emitSignal("started").onInterface(D_TRACKER_INTERFACE).withArguments(activity.getProject().name);
-    BOOST_LOG_SEV(logger, Info) << "Activity on " + activity.getProject().name + " started";
+    BOOST_LOG_SEV(_logger, Info) << "Activity on " + activity.getProject().name + " started";
 }
 
 void dbus::Tracker::stopped() {
@@ -100,7 +100,7 @@ void dbus::Tracker::stopped() {
 
     pt::time_duration thisWeek = util::time::aggregateTimes(activities);
 
-    BOOST_LOG_SEV(logger, Info) << "Activity on " + activity.getProject().name + " stopped";
+    BOOST_LOG_SEV(_logger, Info) << "Activity on " + activity.getProject().name + " stopped";
     if (!isQuiet()) {
         NotifyNotification* n = notify_notification_new("Activity stopped",
                                                         ("Stopped <b>" + activity.getProject().name +

@@ -1,9 +1,7 @@
 //
 // Created by bdardenn on 4/22/20.
 //
-
-#ifndef MEDOR_VCSSTORE_H
-#define MEDOR_VCSSTORE_H
+#pragma once
 
 #include <string>
 
@@ -23,5 +21,3 @@ class VcsStore {
 };
 
 } // namespace medor::storage
-
-#endif // MEDOR_VCSSTORE_H

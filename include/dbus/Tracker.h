@@ -1,9 +1,7 @@
 //
 // Created by bdardenn on 4/14/20.
 //
-
-#ifndef MEDOR_TRACKER_H
-#define MEDOR_TRACKER_H
+#pragma once
 
 #include <boost/log/sources/severity_logger.hpp>
 #include <boost/log/trivial.hpp>
@@ -55,12 +53,10 @@ class Tracker {
 
     void stopped();
 
-    logsrc::severity_logger<Severity> logger;
+    logsrc::severity_logger<Severity> _logger;
     storage::ActivityStore _activities;
     std::unique_ptr<sdbus::IObject> _dbusObject{};
     std::optional<model::Activity> _current;
     bool _quiet = false;
 };
 } // namespace medor::dbus
-
-#endif // MEDOR_TRACKER_H

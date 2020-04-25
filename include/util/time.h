@@ -1,9 +1,7 @@
 //
 // Created by bdardenn on 4/19/20.
 //
-
-#ifndef MEDOR_TIMEUTIL_H
-#define MEDOR_TIMEUTIL_H
+#pragma once
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 
@@ -28,5 +26,3 @@ std::string format_duration(const pt::time_duration& duration, bool brief);
 pt::time_duration aggregateTimes(const std::vector<model::Activity>& activities);
 
 } // namespace medor::util::time
-
-#endif // MEDOR_TIMEUTIL_H

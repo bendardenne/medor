@@ -1,9 +1,7 @@
 //
 // Created by bdardenn on 4/14/20.
 //
-
-#ifndef MEDOR_ACTIVITY_H
-#define MEDOR_ACTIVITY_H
+#pragma once
 
 #include <string>
 #include <boost/date_time/posix_time/ptime.hpp>
@@ -41,5 +39,3 @@ class Activity {
     pt::ptime _end;
 };
 } // namespace medor::model
-
-#endif // MEDOR_ACTIVITY_H

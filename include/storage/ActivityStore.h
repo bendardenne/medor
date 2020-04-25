@@ -1,9 +1,7 @@
 //
 // Created by bdardenn on 4/15/20.
 //
-
-#ifndef MEDOR_ACTIVITYSTORE_H
-#define MEDOR_ACTIVITYSTORE_H
+#pragma once
 
 #include <sqlite3.h>
 #include <string>
@@ -29,5 +27,3 @@ class ActivityStore {
     sqlite3* _db;
 };
 } // namespace medor::storage
-
-#endif // MEDOR_ACTIVITYSTORE_H
