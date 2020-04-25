@@ -25,4 +25,7 @@ void dbus::VcsTracker::addRepo(std::string repo, std::string project) {
 }
 
 
-void dbus::VcsTracker::activityOnRepo(std::string repo) {}
+void dbus::VcsTracker::activityOnRepo(std::string repo) {
+    
+
+}
