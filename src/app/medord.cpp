@@ -10,7 +10,8 @@
 #include <boost/log/utility/setup/common_attributes.hpp>
 #include <boost/log/utility/setup/file.hpp>
 #include <boost/program_options.hpp>
-#include <libnotify/notification.h>
+#include <giomm-2.4/giomm.h>
+
 #include <sdbus-c++/sdbus-c++.h>
 
 #include "dbus/Constants.h"
@@ -77,6 +78,7 @@ int main(int argc, char** argv) {
     }
 
     dbusConnection = sdbus::createSystemBusConnection(D_SERVICE_NAME);
+    auto notifier = std::make_shared<dbus::Notifier>();
 
     std::string databaseFile = vm["database"].as<std::string>();
 
@@ -91,7 +93,7 @@ int main(int argc, char** argv) {
     auto projectStore = std::make_shared<storage::ProjectStore>(dbConnection);
 
     // Start the tracker.
-    auto tracker = std::make_shared<dbus::Tracker>(*dbusConnection, activityStore, projectStore);
+    auto tracker = std::make_shared<dbus::Tracker>(*dbusConnection, notifier, activityStore, projectStore);
     dbus::VcsHinter vcsHinter(*dbusConnection, tracker, vcsStore, projectStore);
 
     signal(SIGTERM, signalHandler);
@@ -112,15 +114,10 @@ int main(int argc, char** argv) {
 
             if (period.length().hours() > hoursOnProject) {
                 hoursOnProject = period.length().hours();
-
-                NotifyNotification* n =
-                    notify_notification_new("Time tracking",
-                                            ("You've been working on <b>" + status["project"].get<std::string>() +
-                                             "</b> for <b>" + std::to_string(hoursOnProject) + "</b> hours.<br/>")
-                                                .c_str(),
-                                            NOTIFY_ICON);
-                notify_notification_set_timeout(n, 5000);
-                notify_notification_show(n, 0);
+                std::stringstream ss;
+                ss << "You've been working on <b>" << status["project"].get<std::string>() << "</b> ";
+                ss << "for <b>" << std::to_string(hoursOnProject) << " hours.<br/>";
+                notifier->send("Time tracking", ss.str());
             }
         }
     }

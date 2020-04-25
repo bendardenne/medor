@@ -10,5 +10,3 @@
 
 #define D_VCSHINTER_OBJECT "/org/medor/hinters/vcs"
 #define D_VCSHINTER_INTERFACE "org.medor.hinters.Vcs"
-
-#define NOTIFY_ICON "clock"

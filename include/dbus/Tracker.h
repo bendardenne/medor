@@ -8,6 +8,7 @@
 #include <optional>
 #include <sdbus-c++/sdbus-c++.h>
 
+#include "dbus/Notifier.h"
 #include "model/Activity.h"
 #include "storage/ActivityStore.h"
 #include "storage/ProjectStore.h"
@@ -19,6 +20,7 @@ namespace medor::dbus {
 class Tracker {
   public:
     Tracker(sdbus::IConnection& connection,
+            std::shared_ptr<Notifier> notifier,
             std::shared_ptr<storage::ActivityStore> activityStore,
             std::shared_ptr<storage::ProjectStore> projectStore);
 
@@ -57,9 +59,8 @@ class Tracker {
     logsrc::severity_logger<Severity> _logger;
     std::shared_ptr<storage::ActivityStore> _activities;
     std::shared_ptr<storage::ProjectStore> _projects;
-
     std::unique_ptr<sdbus::IObject> _dbusObject{};
     std::optional<model::Activity> _current;
-    bool _quiet = false;
+    std::shared_ptr<Notifier> _notifier;
 };
 } // namespace medor::dbus

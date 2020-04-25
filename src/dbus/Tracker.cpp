@@ -5,7 +5,6 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time/posix_time/posix_time_io.hpp>
 #include <iostream>
-#include <libnotify/notify.h>
 #include <utility>
 
 #include "dbus/Constants.h"
@@ -15,13 +14,12 @@
 using namespace medor;
 
 dbus::Tracker::Tracker(sdbus::IConnection& connection,
+                       std::shared_ptr<Notifier> notifier,
                        std::shared_ptr<storage::ActivityStore> activityStore,
                        std::shared_ptr<storage::ProjectStore> projectStore)
-    : _activities(std::move(activityStore)), _projects(std::move(projectStore)),
+    : _notifier(std::move(notifier)), _activities(std::move(activityStore)), _projects(std::move(projectStore)),
       _dbusObject(sdbus::createObject(connection, D_TRACKER_OBJECT)) {
     namespace ph = std::placeholders;
-
-    notify_init("medor");
 
     std::function<void(std::string)> start = std::bind(&Tracker::start, this, ph::_1);
     std::function<void()> stop = std::bind(&Tracker::stop, this);
@@ -31,17 +29,11 @@ dbus::Tracker::Tracker(sdbus::IConnection& connection,
     std::function<void(bool)> setQuiet = std::bind(&Tracker::setQuiet, this, ph::_1);
 
     _dbusObject->registerMethod("start").onInterface(D_TRACKER_INTERFACE).implementedAs(start);
-
     _dbusObject->registerMethod("stop").onInterface(D_TRACKER_INTERFACE).implementedAs(stop);
-
     _dbusObject->registerMethod("resume").onInterface(D_TRACKER_INTERFACE).implementedAs(resume);
-
     _dbusObject->registerSignal("started").onInterface(D_TRACKER_INTERFACE).withParameters({"project"});
-
     _dbusObject->registerSignal("stopped").onInterface(D_TRACKER_INTERFACE).withParameters({"project"});
-
     _dbusObject->registerProperty("status").onInterface(D_TRACKER_INTERFACE).withGetter(status);
-
     _dbusObject->registerProperty("quiet").onInterface(D_TRACKER_INTERFACE).withGetter(isQuiet).withSetter(setQuiet);
 
     _dbusObject->finishRegistration();
@@ -98,21 +90,11 @@ void dbus::Tracker::stopped() {
     pt::time_duration thisWeek = util::time::aggregateTimes(activities);
 
     BOOST_LOG_SEV(_logger, Info) << "Activity on " + activity.getProject().name + " stopped";
-    if (!isQuiet()) {
-        NotifyNotification* n = notify_notification_new("Activity stopped",
-                                                        ("Stopped <b>" + activity.getProject().name +
-                                                         "</b>"
-                                                         " after <b>" +
-                                                         util::time::format_duration(duration, false) +
-                                                         "</b>.<br/>"
-                                                         "This week: <b>" +
-                                                         util::time::format_duration(thisWeek, false) + "</b>.")
-                                                            .c_str(),
-                                                        NOTIFY_ICON);
-
-        notify_notification_set_timeout(n, 5000); // 10 seconds
-        notify_notification_show(n, nullptr);
-    }
+    std::stringstream ss;
+    ss << "Stopped <b>" << activity.getProject().name << "</b> after <b>";
+    ss << util::time::format_duration(duration, false) << "</b>.</br>This week: <b>";
+    ss << util::time::format_duration(thisWeek, false) << "</b";
+    _notifier->send("Activity stopped", ss.str());
 }
 
 std::map<std::string, sdbus::Variant> dbus::Tracker::status() {
@@ -141,6 +123,6 @@ std::map<std::string, sdbus::Variant> dbus::Tracker::status() {
     return output;
 }
 
-bool dbus::Tracker::isQuiet() const { return _quiet; }
+bool dbus::Tracker::isQuiet() const { return _notifier->isQuiet(); }
 
-void dbus::Tracker::setQuiet(bool quiet) { _quiet = quiet; }
+void dbus::Tracker::setQuiet(bool quiet) { _notifier->setQuiet(quiet); }

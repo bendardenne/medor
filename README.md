@@ -10,24 +10,10 @@ Who knows, it's a jungle out there.
 
 It's a work in progress.
 
-## VCS integration
-
-Idea:   VcsTracker  DBUS object
-
-Add a clone hook, possibly prompting to link the cloned repo with a project, maybe linking with the current active project?
-Can you get user input during a hook?
-
-Add commit/update hooks that notify the tracker that we are working on a given repo.
-The tracker can then emit a notification warning if the current project does not match,
-  or even automatically change the active project.
-
-If repos are linked to projects, reports can perhaps include commit messages.
-Probably need git and hg third party lib to read the commit history.
-
-
-
 ## TODO
+* Git / Hg hooks and CLI for hinting? 
+* Show commits in reports
 * Verify concurrency in SQLite
-* Warnings when stopped on a weekday during workhours?
+* Warnings when stopped on a weekday during work hours?
 * Add a comment field to activities?
-* Interface to edit / delete activities? Add past activities
+* Interface to edit / delete activities / add past activities
