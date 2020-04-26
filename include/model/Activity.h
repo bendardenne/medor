@@ -10,11 +10,17 @@ namespace pt = boost::posix_time;
 
 namespace medor::model {
 
+/**
+ * A project.
+ */
 struct Project {
     int id;
     std::string name;
 };
 
+/**
+ * An activity. It belongs to a project, and has a start time, and possibly a end time.
+ */
 class Activity {
   public:
     explicit Activity(Project project);

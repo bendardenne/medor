@@ -11,7 +11,6 @@ Who knows, it's a jungle out there.
 It's a work in progress.
 
 ## TODO
-* Remove giomm and call freedesktop notifications directly. 
 * Git / Hg hooks and CLI for hinting? 
 * Show commits in reports
 * Verify concurrency in SQLite

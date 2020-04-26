@@ -16,12 +16,12 @@ namespace greg = boost::gregorian;
  * Creates a time period of a given week, relative to the current week.
  * @param offset 0 = current week. 1 = last week. 2 = 2 weeks ago. etc.
  */
-pt::time_period week_from_now(unsigned int offset);
+pt::time_period weekFromNow(unsigned int offset);
 
 /**
  * Formats duration in a human-readable way
  */
-std::string format_duration(const pt::time_duration& duration, bool brief);
+std::string formatDuration(const pt::time_duration& duration, bool brief);
 
 pt::time_duration aggregateTimes(const std::vector<model::Activity>& activities);
 

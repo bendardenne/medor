@@ -65,7 +65,7 @@ void dbus::Tracker::resume() {
         return; // do nothing
     }
 
-    std::string lastProject = this->_activities->getRecentProjects()[0];
+    std::string lastProject = this->_activities->getRecentProjects(0)[0];
     this->start(lastProject);
 }
 
@@ -85,15 +85,15 @@ void dbus::Tracker::stopped() {
     pt::time_duration duration = period.length();
 
     std::vector<model::Activity> activities =
-        _activities->getActivities(activity.getProject(), util::time::week_from_now(0));
+        _activities->getActivities(activity.getProject(), util::time::weekFromNow(0));
 
     pt::time_duration thisWeek = util::time::aggregateTimes(activities);
 
     BOOST_LOG_SEV(_logger, Info) << "Activity on " + activity.getProject().name + " stopped";
     std::stringstream ss;
     ss << "Stopped <b>" << activity.getProject().name << "</b> after ";
-    ss << "<b>" << util::time::format_duration(duration, false) << "</b>.<br/>" ;
-    ss << "This week: <b>" << util::time::format_duration(thisWeek, false) << "</b>";
+    ss << "<b>" << util::time::formatDuration(duration, false) << "</b>.<br/>" ;
+    ss << "This week: <b>" << util::time::formatDuration(thisWeek, false) << "</b>";
     _notifier->send("Activity stopped", ss.str());
 }
 
@@ -104,7 +104,7 @@ std::map<std::string, sdbus::Variant> dbus::Tracker::status() {
         model::Activity activity = _current.value();
 
         std::vector<model::Activity> activities =
-            _activities->getActivities(activity.getProject(), util::time::week_from_now(0));
+            _activities->getActivities(activity.getProject(), util::time::weekFromNow(0));
 
         pt::time_duration thisWeek = util::time::aggregateTimes(activities);
 

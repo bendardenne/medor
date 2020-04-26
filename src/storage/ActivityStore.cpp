@@ -32,7 +32,7 @@ void storage::ActivityStore::add(const model::Activity& activity) {
     sqlite3_finalize(newActivity);
 }
 
-std::vector<std::string> storage::ActivityStore::getRecentProjects() {
+std::vector<std::string> storage::ActivityStore::getRecentProjects(unsigned int limit) {
     std::vector<std::string> projects;
 
     sqlite3_stmt* getProjects;
@@ -44,8 +44,7 @@ std::vector<std::string> storage::ActivityStore::getRecentProjects() {
                        &getProjects,
                        0);
 
-    // TODO make limit an argument?
-    sqlite3_bind_int(getProjects, 1, 50);
+    sqlite3_bind_int(getProjects, 1, limit);
     while (sqlite3_step(getProjects) == SQLITE_ROW) {
         const char* name = reinterpret_cast<const char*>(sqlite3_column_text(getProjects, 0));
         projects.emplace_back(name);

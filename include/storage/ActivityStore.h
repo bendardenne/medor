@@ -10,16 +10,36 @@
 #include "model/Activity.h"
 
 namespace medor::storage {
+/**
+ * A store that can manage the registered activities.
+ */
 class ActivityStore {
   public:
     explicit ActivityStore(sqlite3* dbConnection);
 
+    /**
+     * @param activity A new activity to be registered.
+     */
     void add(const medor::model::Activity& activity);
 
-    std::vector<std::string> getRecentProjects();
+    /**
+     * Get a list of the recent projects, ordered by most recent first.
+     * @param limit The maximum of projects to return (Default: 50)
+     * @return
+     */
+    std::vector<std::string> getRecentProjects(unsigned int limit = 50);
 
+    /**
+     * @param project A project.
+     * @param period  A time period.
+     * @return All the activities that started in the given period, for the given project.
+     */
     std::vector<medor::model::Activity> getActivities(const model::Project& project, pt::time_period period);
 
+    /**
+     * @param period A time period.
+     * @return  All activities that started in the given period (all projects).
+     */
     std::vector<medor::model::Activity> getActivities(pt::time_period period);
 
 

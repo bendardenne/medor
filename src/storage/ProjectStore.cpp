@@ -10,10 +10,10 @@ using namespace medor;
 
 ProjectStore::ProjectStore(sqlite3* dbConnection) : _db(dbConnection) { util::database::createTables(dbConnection); }
 
-int ProjectStore::getIdForProject(const std::string& projectName) {
+int ProjectStore::getIdForProject(const std::string& project) {
     sqlite3_stmt* getProjectId;
     sqlite3_prepare_v2(_db, "select id from projects where name like ?", -1, &getProjectId, 0);
-    sqlite3_bind_text(getProjectId, 1, projectName.c_str(), projectName.length(), SQLITE_STATIC);
+    sqlite3_bind_text(getProjectId, 1, project.c_str(), project.length(), SQLITE_STATIC);
 
     if (sqlite3_step(getProjectId) == SQLITE_ROW) { // While query has result-rows.
         int result = sqlite3_column_int(getProjectId, 0);
@@ -25,7 +25,7 @@ int ProjectStore::getIdForProject(const std::string& projectName) {
 
     sqlite3_stmt* newProject;
     sqlite3_prepare_v2(_db, "insert into projects (name) values (?)", -1, &newProject, 0);
-    sqlite3_bind_text(newProject, 1, projectName.c_str(), projectName.length(), SQLITE_STATIC);
+    sqlite3_bind_text(newProject, 1, project.c_str(), project.length(), SQLITE_STATIC);
     sqlite3_step(newProject);
     sqlite3_step(getProjectId);
     int id = sqlite3_column_int(getProjectId, 0);

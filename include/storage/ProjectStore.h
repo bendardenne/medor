@@ -12,12 +12,23 @@
 
 namespace medor::storage {
 
+/**
+ * A store that manages the known projects.
+ */
 class ProjectStore {
   public:
     explicit ProjectStore(sqlite3* dbConnection);
 
-    int getIdForProject(const std::string& basicString);
+    /**
+     * @param project A project name
+     * @return The ID of this project. If the project does not exist, a new one will be created.
+     */
+    int getIdForProject(const std::string& project);
 
+    /**
+     * @param id An identifier
+     * @return The project for this ID, if any.
+     */
     std::optional<model::Project> getProjectForId(const int id);
 
   private:

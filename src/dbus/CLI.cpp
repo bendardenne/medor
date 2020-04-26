@@ -42,8 +42,8 @@ void dbus::CLI::status(std::string format) {
 
         boost::algorithm::replace_all(format, "%i", std::to_string(status["project_id"].get<int>()));
         boost::algorithm::replace_all(format, "%p", status["project"].get<std::string>());
-        boost::algorithm::replace_all(format, "%d", util::time::format_duration(period.length(), true));
-        boost::algorithm::replace_all(format, "%w", util::time::format_duration(weekly, true));
+        boost::algorithm::replace_all(format, "%d", util::time::formatDuration(period.length(), true));
+        boost::algorithm::replace_all(format, "%w", util::time::formatDuration(weekly, true));
 
         std::cout << format << std::endl;
     } else {
@@ -55,7 +55,7 @@ void dbus::CLI::projects() {
     // TODO this does not necessarily include the current project, or it may not
     // be the first of the list.
     //  Maybe not a problem?
-    std::vector<std::string> projects = _activityStore.getRecentProjects();
+    std::vector<std::string> projects = _activityStore.getRecentProjects(0);
 
     for (const auto& project : projects) {
         std::cout << project << std::endl;
@@ -63,7 +63,7 @@ void dbus::CLI::projects() {
 }
 
 void dbus::CLI::report(pt::time_period period) {
-    pt::time_period thisWeek = util::time::week_from_now(0);
+    pt::time_period thisWeek = util::time::weekFromNow(0);
     std::vector<model::Activity> allActivities = _activityStore.getActivities(thisWeek);
 
     // Fetch and account for current activity, if any.
@@ -92,7 +92,7 @@ void dbus::CLI::report(pt::time_period period) {
 
         for (const auto& project : byProject) {
             const std::string& spentOnProject =
-                util::time::format_duration(util::time::aggregateTimes(project.second), false);
+                util::time::formatDuration(util::time::aggregateTimes(project.second), false);
             std::cout << "\t\t" << project.second[0].getProject().name << ": " << spentOnProject << std::endl;
         }
     }

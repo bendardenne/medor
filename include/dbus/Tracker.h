@@ -17,6 +17,9 @@
 namespace logsrc = boost::log::sources;
 namespace medor::dbus {
 
+/**
+ * A DBUS object which keeps track of the current status.
+ */
 class Tracker {
   public:
     Tracker(sdbus::IConnection& connection,
@@ -46,8 +49,14 @@ class Tracker {
      */
     void resume();
 
+    /**
+     * Whether notifications should be muted.
+     */
     bool isQuiet() const;
 
+    /**
+     * Whether notifications should be muted.
+     */
     void setQuiet(bool quiet);
 
   private:

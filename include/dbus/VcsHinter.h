@@ -19,6 +19,12 @@ namespace logsrc = boost::log::sources;
 
 namespace medor::dbus {
 
+/**
+ * DBUS object that provides hints about the possibly active project, based on activity in VCS systems.
+ * External applications (e.g. hooks in git, mercurial) can notify this hinter when something happens in a registered
+ * repository. Currently the hinter will show a system notification allowing the user to quickly switch to the correct
+ * project.
+ */
 class VcsHinter {
   public:
     VcsHinter(sdbus::IConnection& dbusConnection,
