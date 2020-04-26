@@ -20,9 +20,9 @@ namespace logsrc = boost::log::sources;
 namespace medor::dbus {
 
 class VcsHinter {
-
   public:
     VcsHinter(sdbus::IConnection& dbusConnection,
+              std::shared_ptr<Notifier> notifier,
               std::shared_ptr<Tracker> tracker,
               std::shared_ptr<storage::VcsStore> vcsStore,
               std::shared_ptr<storage::ProjectStore> projectStore);
@@ -33,6 +33,7 @@ class VcsHinter {
     void activityOnRepo(const std::string& repo);
 
     logsrc::severity_logger<Severity> _logger;
+    std::shared_ptr<Notifier> _notifier;
     std::shared_ptr<Tracker> _tracker;
     std::shared_ptr<storage::VcsStore> _vcsStore;
     std::shared_ptr<storage::ProjectStore> _projectStore;

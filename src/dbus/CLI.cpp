@@ -16,9 +16,10 @@ using namespace medor;
 
 namespace greg = boost::gregorian;
 
-dbus::CLI::CLI(storage::ActivityStore activityStore)
-    : _activityStore(activityStore), _trackerProxy(sdbus::createProxy(D_SERVICE_NAME, D_TRACKER_OBJECT)),
-      _vcsHinterProxy(sdbus::createProxy(D_SERVICE_NAME, D_VCSHINTER_OBJECT)) {}
+dbus::CLI::CLI(storage::ActivityStore activityStore, sdbus::IConnection& dbusConnection)
+    : _activityStore(activityStore),
+      _trackerProxy(sdbus::createProxy(dbusConnection, D_SERVICE_NAME, D_TRACKER_OBJECT)),
+      _vcsHinterProxy(sdbus::createProxy(dbusConnection, D_SERVICE_NAME, D_VCSHINTER_OBJECT)) {}
 
 void dbus::CLI::start(const std::string& activity) {
     _trackerProxy->callMethod("start").onInterface(D_TRACKER_INTERFACE).withArguments(activity);

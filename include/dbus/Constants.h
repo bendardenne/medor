@@ -10,3 +10,6 @@
 
 #define D_VCSHINTER_OBJECT "/org/medor/hinters/vcs"
 #define D_VCSHINTER_INTERFACE "org.medor.hinters.Vcs"
+
+#define D_NOTIF_INTERFACE "org.freedesktop.Notifications"
+#define D_NOTIF_OBJECT "/org/freedesktop/Notifications"

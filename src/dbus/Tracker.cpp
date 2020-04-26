@@ -91,9 +91,9 @@ void dbus::Tracker::stopped() {
 
     BOOST_LOG_SEV(_logger, Info) << "Activity on " + activity.getProject().name + " stopped";
     std::stringstream ss;
-    ss << "Stopped <b>" << activity.getProject().name << "</b> after <b>";
-    ss << util::time::format_duration(duration, false) << "</b>.</br>This week: <b>";
-    ss << util::time::format_duration(thisWeek, false) << "</b";
+    ss << "Stopped <b>" << activity.getProject().name << "</b> after ";
+    ss << "<b>" << util::time::format_duration(duration, false) << "</b>.<br/>" ;
+    ss << "This week: <b>" << util::time::format_duration(thisWeek, false) << "</b>";
     _notifier->send("Activity stopped", ss.str());
 }
 

@@ -26,7 +26,8 @@ int main(int argc, char** argv) {
 
     storage::ActivityStore activityStore(dbConnection);
     try {
-        dbus::CLI cli(activityStore);
+        std::unique_ptr<sdbus::IConnection> dbusConnection = sdbus::createSessionBusConnection();
+        dbus::CLI cli(activityStore, *dbusConnection);
 
         if (cmd == "start") {
             cli.start(argv[2]);

@@ -10,11 +10,12 @@
 using namespace medor;
 
 dbus::VcsHinter::VcsHinter(sdbus::IConnection& dbusConnection,
+                           std::shared_ptr<Notifier> notifier,
                            std::shared_ptr<Tracker> tracker,
                            std::shared_ptr<storage::VcsStore> vcsStore,
                            std::shared_ptr<storage::ProjectStore> projectStore)
-    : _dbusObject(sdbus::createObject(dbusConnection, D_VCSHINTER_OBJECT)), _vcsStore(std::move(vcsStore)),
-      _projectStore(std::move(projectStore)), _tracker(std::move(tracker)) {
+    : _dbusObject(sdbus::createObject(dbusConnection, D_VCSHINTER_OBJECT)), _tracker(std::move(tracker)),
+      _notifier(std::move(notifier)), _vcsStore(std::move(vcsStore)), _projectStore(std::move(projectStore)) {
 
     namespace ph = std::placeholders;
 
@@ -41,7 +42,6 @@ void dbus::VcsHinter::activityOnRepo(const std::string& repo) {
 
     if (!projectId) {
         BOOST_LOG_SEV(_logger, Warning) << "Hinted repo is not yet known: " << repo;
-        // TODO notify?
         return;
     }
 
@@ -53,4 +53,6 @@ void dbus::VcsHinter::activityOnRepo(const std::string& repo) {
 
     std::string projectName = _projectStore->getProjectForId(projectId.value()).value().name;
     BOOST_LOG_SEV(_logger, Warning) << "Hinted project is not yet being tracked:" << projectName;
+    auto startProject = [this, projectName]() { _tracker->start(projectName); };
+    _notifier->send("Activity detected", "Are you working on <b> " + projectName + "</b>?", "startProject", "Yes", startProject);
 }

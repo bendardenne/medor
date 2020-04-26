@@ -12,7 +12,7 @@ namespace pt = boost::posix_time;
 
 class CLI {
   public:
-    explicit CLI(storage::ActivityStore activityStore);
+    explicit CLI(storage::ActivityStore activityStore, sdbus::IConnection& dbusConnection);
 
     void start(const std::string& activity);
 

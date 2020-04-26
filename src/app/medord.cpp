@@ -10,7 +10,6 @@
 #include <boost/log/utility/setup/common_attributes.hpp>
 #include <boost/log/utility/setup/file.hpp>
 #include <boost/program_options.hpp>
-#include <giomm-2.4/giomm.h>
 
 #include <sdbus-c++/sdbus-c++.h>
 
@@ -77,8 +76,8 @@ int main(int argc, char** argv) {
         // TODO
     }
 
-    dbusConnection = sdbus::createSystemBusConnection(D_SERVICE_NAME);
-    auto notifier = std::make_shared<dbus::Notifier>();
+    dbusConnection = sdbus::createSessionBusConnection(D_SERVICE_NAME);
+    auto notifier = std::make_shared<dbus::Notifier>(*dbusConnection);
 
     std::string databaseFile = vm["database"].as<std::string>();
 
@@ -94,7 +93,7 @@ int main(int argc, char** argv) {
 
     // Start the tracker.
     auto tracker = std::make_shared<dbus::Tracker>(*dbusConnection, notifier, activityStore, projectStore);
-    dbus::VcsHinter vcsHinter(*dbusConnection, tracker, vcsStore, projectStore);
+    dbus::VcsHinter vcsHinter(*dbusConnection, notifier, tracker, vcsStore, projectStore);
 
     signal(SIGTERM, signalHandler);
     signal(SIGINT, signalHandler);
@@ -116,7 +115,7 @@ int main(int argc, char** argv) {
                 hoursOnProject = period.length().hours();
                 std::stringstream ss;
                 ss << "You've been working on <b>" << status["project"].get<std::string>() << "</b> ";
-                ss << "for <b>" << std::to_string(hoursOnProject) << " hours.<br/>";
+                ss << "for <b>" << std::to_string(hoursOnProject) << "</b> hours.<br/>";
                 notifier->send("Time tracking", ss.str());
             }
         }
