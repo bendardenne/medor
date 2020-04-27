@@ -51,11 +51,11 @@ void dbus::CLI::status(std::string format) {
     }
 }
 
-void dbus::CLI::projects() {
+void dbus::CLI::projects(unsigned int limit) {
     // TODO this does not necessarily include the current project, or it may not
     // be the first of the list.
     //  Maybe not a problem?
-    std::vector<std::string> projects = _activityStore.getRecentProjects(0);
+    std::vector<std::string> projects = _activityStore.getRecentProjects(limit);
 
     for (const auto& project : projects) {
         std::cout << project << std::endl;
@@ -105,6 +105,10 @@ void dbus::CLI::setQuiet(bool quiet) {
 
 bool dbus::CLI::isQuiet() { return _trackerProxy->getProperty("quiet").onInterface(D_TRACKER_INTERFACE).get<bool>(); }
 
-void dbus::CLI::addRepo(std::basic_string<char> project, std::basic_string<char> path) {
+void dbus::CLI::addRepo(const std::string& project, const std::string& path) {
     _vcsHinterProxy->callMethod("addRepo").onInterface(D_VCSHINTER_INTERFACE).withArguments(project, path);
+}
+
+void dbus::CLI::activityOnRepo(const std::string& path) {
+    _vcsHinterProxy->callMethod("activityOnRepo").onInterface(D_VCSHINTER_INTERFACE).withArguments(path);
 }

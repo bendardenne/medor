@@ -22,7 +22,7 @@ class CLI {
 
     void status(std::string format);
 
-    void projects();
+    void projects(unsigned int limit);
 
     void report(pt::time_period period);
 
@@ -30,7 +30,10 @@ class CLI {
 
     bool isQuiet();
 
-    void addRepo(std::basic_string<char> project, std::basic_string<char> path);
+    void addRepo(const std::string& project, const std::string& path);
+
+    void activityOnRepo(const std::string& path);
+
 
   private:
     medor::storage::ActivityStore _activityStore;
