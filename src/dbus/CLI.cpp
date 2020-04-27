@@ -102,6 +102,9 @@ void dbus::CLI::report(pt::time_period period) {
 void dbus::CLI::setQuiet(bool quiet) {
     _trackerProxy->setProperty("quiet").onInterface(D_TRACKER_INTERFACE).toValue(quiet);
 }
+
+bool dbus::CLI::isQuiet() { return _trackerProxy->getProperty("quiet").onInterface(D_TRACKER_INTERFACE).get<bool>(); }
+
 void dbus::CLI::addRepo(std::basic_string<char> project, std::basic_string<char> path) {
     _vcsHinterProxy->callMethod("addRepo").onInterface(D_VCSHINTER_INTERFACE).withArguments(project, path);
 }

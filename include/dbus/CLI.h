@@ -28,6 +28,8 @@ class CLI {
 
     void setQuiet(bool quiet);
 
+    bool isQuiet();
+
     void addRepo(std::basic_string<char> project, std::basic_string<char> path);
 
   private:

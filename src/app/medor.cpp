@@ -14,6 +14,7 @@ namespace pt = boost::posix_time;
 void start(dbus::CLI& cli, const std::vector<std::string>& arguments);
 void status(dbus::CLI& cli, const std::vector<std::string>& arguments);
 void report(dbus::CLI& cli, const std::vector<std::string>& arguments);
+void quiet(dbus::CLI& cli, const std::vector<std::string>& arguments);
 
 int main(int argc, char** argv) {
     // FIXME duplicated in medord
@@ -81,7 +82,7 @@ int main(int argc, char** argv) {
         } else if (cmd == "report") {
             report(cli, unrecognized);
         } else if (cmd == "quiet") {
-            cli.setQuiet(std::string(argv[2]) == "on");
+            quiet(cli, unrecognized);
         } else if (cmd == "repo") {
             cli.addRepo(std::string(argv[2]), std::string(argv[3]));
         } else {
@@ -121,7 +122,7 @@ void status(dbus::CLI& cli, const std::vector<std::string>& arguments) {
 
 void report(dbus::CLI& cli, const std::vector<std::string>& arguments) {
     // TODO maybe allow more flexibility, like arbitrary from and to dates?
-    po::options_description options("start options");
+    po::options_description options("report options");
     options.add_options()("week", po::value<int>()->default_value(0), "Week for which we want a report. 0 = this week, -1 = last week, etc.");
 
     po::positional_options_description pos;
@@ -133,4 +134,32 @@ void report(dbus::CLI& cli, const std::vector<std::string>& arguments) {
     pt::time_period period = util::time::weekFromNow(vm["week"].as<int>());
     std::cout << period << std::endl;
     cli.report(period);
+}
+
+void quiet(dbus::CLI& cli, const std::vector<std::string>& arguments) {
+    // TODO maybe allow more flexibility, like arbitrary from and to dates?
+    po::options_description options("quiet options");
+    options.add_options()("value", po::value<std::string>(), "'on' or 'off'");
+
+    po::positional_options_description pos;
+    pos.add("value", 1);
+
+    po::variables_map vm;
+    po::parsed_options parsed = po::command_line_parser(arguments).options(options).positional(pos).run();
+    po::store(parsed, vm);
+
+    if (vm.count("value") == 0) {
+        std::cout << "quiet: " << (cli.isQuiet() ? "on" : "off") << std::endl;
+        return;
+    }
+
+    std::string value = vm["value"].as<std::string>();
+
+    if (value == "on" or value == "true") {
+        cli.setQuiet(true);
+    } else if (value == "off" or value == "false") {
+        cli.setQuiet(false);
+    } else {
+        std::cerr << "Unknown value: " + value << std::endl;
+    }
 }

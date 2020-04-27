@@ -16,5 +16,13 @@ It's a work in progress.
 * Show commits in reports
 * Verify concurrency in SQLite
 * Warnings when stopped on a weekday during work hours?
-* Add a comment field to activities?
+* Add a optional comment field to activities?  
+    - Idea 1     
+              
+           medor annotate "did this did that, fixed problems"
+    - Idea 2 
+           
+           medor start AIA "did this, did that"
+           
+    - Could be both if e.g. you want to specify later what you have just done? 
 * Interface to edit / delete activities / add past activities
