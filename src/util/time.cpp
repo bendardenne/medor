@@ -18,10 +18,19 @@ pt::time_period time::weekFromNow(unsigned int offset) {
     // Go back offset amount of weeks
     greg::date now = greg::day_clock::local_day() - greg::date_duration(7 * offset);
 
-    pt::ptime week_start = pt::ptime(monday.get_date(now), pt::hours(0));
-    pt::ptime week_end = pt::ptime(sunday.get_date(now), pt::hours(23) + pt::minutes(59) + pt::seconds(59));
+    pt::ptime weekStart = pt::ptime(monday.get_date(now), pt::hours(0));
 
-    return pt::time_period(week_start, week_end);
+    // first_day_of_the_week_before will give us the previous Monday, if now is a Monday. We don't want that.
+    if(now.day_of_week() == greg::Monday) {
+        weekStart = pt::ptime(now, pt::hours(0));
+    }
+
+    pt::ptime weekEnd = pt::ptime(sunday.get_date(now), pt::hours(23) + pt::minutes(59) + pt::seconds(59));
+    if(now.day_of_week() == greg::Sunday) {
+        weekEnd = pt::ptime(now, pt::hours(23) + pt::minutes(59) + pt::seconds(59));
+    }
+
+    return pt::time_period(weekStart, weekEnd);
 }
 
 std::string time::formatDuration(const pt::time_duration& duration, bool brief) {

@@ -18,8 +18,7 @@ int ProjectStore::getIdForProject(const std::string& project) {
     if (sqlite3_step(getProjectId) == SQLITE_ROW) { // While query has result-rows.
         int result = sqlite3_column_int(getProjectId, 0);
         sqlite3_finalize(getProjectId);
-        // TODO inform of new project
-        //        BOOST_LOG_SEV(_logger, Info) << "Added repo for project " + project + ": " + repo;
+        BOOST_LOG_SEV(_logger, Info) << "Created new ID for project " << project;
         return result;
     }
 

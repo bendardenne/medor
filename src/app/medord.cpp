@@ -16,6 +16,7 @@
 #include "dbus/Constants.h"
 #include "dbus/Tracker.h"
 #include "dbus/VcsHinter.h"
+#include "util/database.h"
 
 using namespace medor;
 namespace po = boost::program_options;
@@ -24,7 +25,6 @@ namespace fs = boost::filesystem;
 namespace logging = boost::log;
 namespace sinks = boost::log::sinks;
 
-std::unique_ptr<sdbus::IConnection> dbusConnection;
 bool running = true;
 
 void initLogging(const std::string& logLocation) {
@@ -35,10 +35,7 @@ void initLogging(const std::string& logLocation) {
                           logging::keywords::auto_flush = true);
 }
 
-void signalHandler(int signum) {
-    dbusConnection->leaveEventLoop();
-    running = false;
-}
+void signalHandler(int signum) { running = false; }
 
 int main(int argc, char** argv) {
     std::string homedir;
@@ -50,7 +47,6 @@ int main(int argc, char** argv) {
 
     initLogging(homedir + "/.config/medor/");
 
-    // Options options to the user in the CLI
     po::options_description options("Options");
     options.add_options()("help,h", "Show this help.")(
         "database,d",
@@ -76,7 +72,7 @@ int main(int argc, char** argv) {
         // TODO
     }
 
-    dbusConnection = sdbus::createSessionBusConnection(D_SERVICE_NAME);
+    std::unique_ptr<sdbus::IConnection> dbusConnection = sdbus::createSessionBusConnection(D_SERVICE_NAME);
     auto notifier = std::make_shared<dbus::Notifier>(*dbusConnection);
 
     std::string databaseFile = vm["database"].as<std::string>();
@@ -120,7 +116,13 @@ int main(int argc, char** argv) {
             }
         }
     }
+    dbusConnection->leaveEventLoop();
+
+    // Stop and save any current activity
     tracker->stop();
+
     int ret = sqlite3_close(dbConnection);
-    return 0;
+    util::database::checkError(ret);
+
+    return EXIT_SUCCESS;
 }

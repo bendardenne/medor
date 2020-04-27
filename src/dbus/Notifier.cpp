@@ -33,11 +33,12 @@ void Notifier::send(const std::string& title,
         return;
     }
 
+    std::vector<std::string> actions;
     if (!actionName.empty()) {
         _actionCallbacks[actionName] = std::move(callback);
+        actions.emplace_back(actionName);
+        actions.emplace_back(label);
     }
-
-    std::vector<std::string> actions{actionName, label};
 
     _notifyProxy->callMethod("Notify")
         .onInterface(D_NOTIF_INTERFACE)

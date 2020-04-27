@@ -4,12 +4,16 @@
 
 #pragma once
 
+#include <boost/log/sources/severity_logger.hpp>
+#include <boost/log/trivial.hpp>
 #include <optional>
 #include <sqlite3.h>
 #include <string>
 
 #include "model/Activity.h"
+#include "util/logging.h"
 
+namespace logsrc = boost::log::sources;
 namespace medor::storage {
 
 /**
@@ -32,6 +36,7 @@ class ProjectStore {
     std::optional<model::Project> getProjectForId(const int id);
 
   private:
+    logsrc::severity_logger<Severity> _logger;
     sqlite3* _db;
 };
 

@@ -11,7 +11,8 @@ Who knows, it's a jungle out there.
 It's a work in progress.
 
 ## TODO
-* Git / Hg hooks and CLI for hinting? 
+* Inactivity detection: pause on sleep / suspend, possibly based on input inactivity.
+* Git / Hg hooks and CLI for hinting
 * Show commits in reports
 * Verify concurrency in SQLite
 * Warnings when stopped on a weekday during work hours?
