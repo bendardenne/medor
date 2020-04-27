@@ -21,6 +21,7 @@ Project Activity::getProject() const { return _project; }
 
 pt::ptime Activity::getStart() const { return _start; }
 
+// TODO this can return garbage! Objects are not always fully initialized! Figure out a way to handle this.
 pt::ptime Activity::getEnd() const { return _end; }
 
 void Activity::setEnd(const pt::ptime& end) { _end = end; }

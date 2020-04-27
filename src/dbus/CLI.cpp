@@ -63,17 +63,18 @@ void dbus::CLI::projects() {
 }
 
 void dbus::CLI::report(pt::time_period period) {
-    pt::time_period thisWeek = util::time::weekFromNow(0);
-    std::vector<model::Activity> allActivities = _activityStore.getActivities(thisWeek);
+    std::vector<model::Activity> allActivities = _activityStore.getActivities(period);
 
     // Fetch and account for current activity, if any.
     std::map<std::string, sdbus::Variant> status =
         _trackerProxy->getProperty("status").onInterface(D_TRACKER_INTERFACE);
     if (status.count("project") > 0) {
-        model::Project project = {.id = status["project_id"], .name = status["project"]};
         pt::ptime start = pt::from_iso_string(status["start"].get<std::string>());
-        pt::ptime now = pt::second_clock::local_time();
-        allActivities.emplace_back(model::Activity(project, start, now));
+        if(period.contains(start)) {
+            model::Project project = {.id = status["project_id"], .name = status["project"]};
+            pt::ptime now = pt::second_clock::local_time();
+            allActivities.emplace_back(model::Activity(project, start, now));
+        }
     }
 
     std::map<greg::date, std::vector<model::Activity>> byDay;

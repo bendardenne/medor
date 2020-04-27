@@ -52,6 +52,7 @@ pt::time_duration time::aggregateTimes(const std::vector<model::Activity>& activ
     pt::time_duration total;
 
     for (const auto& activity : activities) {
+        //TODO consider exposing a time_period on the Activity?
         pt::time_period period(activity.getStart(), activity.getEnd());
         total += period.length();
     }

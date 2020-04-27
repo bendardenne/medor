@@ -4,6 +4,7 @@
 #include <pwd.h>
 #include <sdbus-c++/sdbus-c++.h>
 
+#include "util/time.h"
 #include "dbus/CLI.h"
 
 using namespace medor;
@@ -78,8 +79,7 @@ int main(int argc, char** argv) {
         } else if (cmd == "projects") {
             cli.projects();
         } else if (cmd == "report") {
-//            report(cli, unrecognized);
-            cli.report(pt::time_period(pt::second_clock::local_time(), pt::second_clock::local_time()));
+            report(cli, unrecognized);
         } else if (cmd == "quiet") {
             cli.setQuiet(std::string(argv[2]) == "on");
         } else if (cmd == "repo") {
@@ -120,12 +120,17 @@ void status(dbus::CLI& cli, const std::vector<std::string>& arguments) {
 }
 
 void report(dbus::CLI& cli, const std::vector<std::string>& arguments) {
-//    po::options_description options("start options");
-//    options.add_options()("from", po::value<std::string>()->default_value("%p"), "Output format");
-//    options.add_options()("to", po::value<std::string>()->default_value("%p"), "Output format");
+    // TODO maybe allow more flexibility, like arbitrary from and to dates?
+    po::options_description options("start options");
+    options.add_options()("week", po::value<int>()->default_value(0), "Week for which we want a report. 0 = this week, -1 = last week, etc.");
 
-//    po::variables_map vm;
-//    po::parsed_options parsed = po::command_line_parser(arguments).options(options).run();
-//    po::store(parsed, vm);
-//    cli.status(vm["format"].as<std::string>());
+    po::positional_options_description pos;
+    pos.add("week", 1);
+
+    po::variables_map vm;
+    po::parsed_options parsed = po::command_line_parser(arguments).options(options).positional(pos).run();
+    po::store(parsed, vm);
+    pt::time_period period = util::time::weekFromNow(vm["week"].as<int>());
+    std::cout << period << std::endl;
+    cli.report(period);
 }
