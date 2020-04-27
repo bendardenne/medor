@@ -22,7 +22,7 @@ It's a work in progress.
            medor annotate "did this did that, fixed problems"
     - Idea 2 
            
-           medor start AIA "did this, did that"
+           medor start Project "did this, did that"
            
     - Could be both if e.g. you want to specify later what you have just done? 
 * Interface to edit / delete activities / add past activities
