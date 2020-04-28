@@ -24,7 +24,7 @@ void repo(dbus::CLI& cli, const std::vector<std::string>& arguments);
 void projects(dbus::CLI& cli, const std::vector<std::string>& arguments);
 
 int main(int argc, char** argv) {
-    std::unordered_map<std::string, std::function<void(dbus::CLI&, const std::vector<std::string>&)>> commands = {
+    std::map<std::string, std::function<void(dbus::CLI&, const std::vector<std::string>&)>> commands = {
         {"start", &start},
         {"stop", &stop},
         {"resume", &resume},
@@ -72,8 +72,8 @@ int main(int argc, char** argv) {
     // Look for any known command.
     std::vector<std::string> unrecognized = po::collect_unrecognized(parsed.options, po::include_positional);
     std::string cmd;
-    for(const auto& candidate: unrecognized) {
-        if(commands.count(candidate)){
+    for (const auto& candidate : unrecognized) {
+        if (commands.count(candidate)) {
             cmd = candidate;
             break;
         }
@@ -232,5 +232,5 @@ void projects(dbus::CLI& cli, const std::vector<std::string>& arguments) {
     po::parsed_options parsed = po::command_line_parser(arguments).options(options).run();
     po::store(parsed, vm);
 
-    cli.projects(vm["limit"].as<unsigned int>() );
+    cli.projects(vm["limit"].as<unsigned int>());
 }

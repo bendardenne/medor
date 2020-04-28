@@ -65,7 +65,14 @@ void dbus::Tracker::resume() {
         return; // do nothing
     }
 
-    std::string lastProject = this->_activities->getRecentProjects(0)[0];
+    auto activities = this->_activities->getRecentProjects(1);
+
+    if (activities.size() == 0) {
+        BOOST_LOG_SEV(_logger, Error) << "No project to resume.";
+        return;
+    }
+
+    std::string lastProject = activities[0];
     this->start(lastProject);
 }
 
@@ -92,7 +99,7 @@ void dbus::Tracker::stopped() {
     BOOST_LOG_SEV(_logger, Info) << "Activity on " + activity.getProject().name + " stopped";
     std::stringstream ss;
     ss << "Stopped <b>" << activity.getProject().name << "</b> after ";
-    ss << "<b>" << util::time::formatDuration(duration, false) << "</b>.<br/>" ;
+    ss << "<b>" << util::time::formatDuration(duration, false) << "</b>.<br/>";
     ss << "This week: <b>" << util::time::formatDuration(thisWeek, false) << "</b>";
     _notifier->send("Activity stopped", ss.str());
 }

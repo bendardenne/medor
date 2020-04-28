@@ -81,7 +81,7 @@ int main(int argc, char** argv) {
 
     std::string databaseFile = vm["database"].as<std::string>();
 
-    fs::path canonical(databaseFile);
+    fs::path path(databaseFile);
     fs::create_directories(path.parent_path());
 
     sqlite3* dbConnection;
