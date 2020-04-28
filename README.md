@@ -7,15 +7,15 @@ sure this can be useful for anyone else, but feel free to try it out.
 ## Features
 
 * Live tracking with periodical system notifications (freedesktop.org notifications)
-* Integration with git and hg: warnings whan activity happens in a non-active project
+* Integration with git and hg: warnings when activity happens in a non-active project
 * Generation of weekly reports with daily per-project summary
 * Possibility to integrate with dmenu/rofi for easy and cumberless project switching 
 
 ## Building
 
-    git clone https://github.com/bendardenne/medor && cd medor
-    mkdir build
-    cd build && cmake .. 
+    git clone https://github.com/bendardenne/medor
+    cd medor && mkdir build && cd build
+    cmake .. 
     make
     
 `medord` is a service which exposes dbus objects with various tracking methods.
@@ -25,8 +25,8 @@ sure this can be useful for anyone else, but feel free to try it out.
 ## VCS integration
 
 ### mercurial
-
-    medor add $(hg root) MyProject
+    # In the hg repo to be linked with project Foo
+    medor repo $(hg root) Foo
 
     [hooks]
     commit = medor repo $(hg root)
@@ -35,6 +35,9 @@ sure this can be useful for anyone else, but feel free to try it out.
 
 ### git
 Can be done per project in .git/hooks, and can be set up in the templates for each new project with: 
+
+    # In the git repo to be linked with project Foo
+    medor repo $(git rev-parse --show-toplevel) Foo
 
     git config --global init.templatedir '~/.git-templates'
     mkdir -p ~/.git-templates/hooks
