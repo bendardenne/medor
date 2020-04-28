@@ -31,6 +31,18 @@ sure this can be useful for anyone else, but feel free to try it out.
     [hooks]
     commit = medor repo $(hg root)
     update = medor repo $(hg root)
+    # on any hook you like
+
+### git
+Can be done per project in .git/hooks, and can be set up in the templates for each new project with: 
+
+    git config --global init.templatedir '~/.git-templates'
+    mkdir -p ~/.git-templates/hooks
+    git init  # in every existing project, to add the new hook template
+
+Then in the hooks themselves (e.g. `~/git-templates/hooks/pre-commit`), use
+
+    medor repo $(git rev-parse --show-toplevel)
 
 
 ## TODO
@@ -39,7 +51,6 @@ sure this can be useful for anyone else, but feel free to try it out.
 * Zsh autocompletion 
 * CLI to Show linked repo of projects
 * Inactivity detection: pause on sleep / suspend, possibly based on input inactivity.
-* Git hooks
 * Show commits in reports
 * Warnings when stopped on a weekday during work hours?
 * Add a optional comment field to activities?  
