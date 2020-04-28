@@ -21,11 +21,25 @@ sure this can be useful for anyone else, but feel free to try it out.
 `medord` is a service which exposes dbus objects with various tracking methods.
 `medor` is a CLI to control medord.
 
+
+## VCS integration
+
+### mercurial
+
+    medor add $(hg root) MyProject
+
+    [hooks]
+    commit = medor repo $(hg root)
+    update = medor repo $(hg root)
+
+
 ## TODO
 
 ### Features
+* Zsh autocompletion 
+* CLI to Show linked repo of projects
 * Inactivity detection: pause on sleep / suspend, possibly based on input inactivity.
-* Git / Hg hooks
+* Git hooks
 * Show commits in reports
 * Warnings when stopped on a weekday during work hours?
 * Add a optional comment field to activities?  

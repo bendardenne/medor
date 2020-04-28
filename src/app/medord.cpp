@@ -48,10 +48,13 @@ int main(int argc, char** argv) {
     initLogging(homedir + "/.config/medor/");
 
     po::options_description options("Options");
-    options.add_options()("help,h", "Show this help.")(
-        "database,d",
-        po::value<std::string>()->default_value(homedir + "/.config/medor/activities.db"),
-        "Path to the database file.")("daemon,D", "Fork to the backgroud.");
+    // clang-format off
+    options.add_options()
+    ("help,h", "Show this help.")
+    ("database,d",po::value<std::string>()->default_value(homedir + "/.config/medor/activities.db"), "Path to the database file.")
+    ("quiet,q", "Turn off notifications.")
+    ("daemon,D", "Fork to the backgroud.");
+    // clang-format on
 
     po::variables_map vm;
 
@@ -74,10 +77,11 @@ int main(int argc, char** argv) {
 
     std::unique_ptr<sdbus::IConnection> dbusConnection = sdbus::createSessionBusConnection(D_SERVICE_NAME);
     auto notifier = std::make_shared<dbus::Notifier>(*dbusConnection);
+    notifier->setQuiet(vm.count("quiet"));
 
     std::string databaseFile = vm["database"].as<std::string>();
 
-    fs::path path(databaseFile);
+    fs::path canonical(databaseFile);
     fs::create_directories(path.parent_path());
 
     sqlite3* dbConnection;

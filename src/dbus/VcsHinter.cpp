@@ -42,6 +42,7 @@ void dbus::VcsHinter::activityOnRepo(const std::string& repo) {
 
     if (!projectId) {
         BOOST_LOG_SEV(_logger, Warning) << "Hinted repo is not yet known: " << repo;
+        // TODO Notify here too, but no more than once per repo probably (with grace period?)
         return;
     }
 
