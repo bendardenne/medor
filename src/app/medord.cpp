@@ -53,7 +53,7 @@ int main(int argc, char** argv) {
     ("help,h", "Show this help.")
     ("database,d",po::value<std::string>()->default_value(homedir + "/.config/medor/activities.db"), "Path to the database file.")
     ("quiet,q", "Turn off notifications.")
-    ("daemon,D", "Fork to the backgroud.");
+    ("daemon,D", "Fork to the background.");
     // clang-format on
 
     po::variables_map vm;

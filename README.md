@@ -34,7 +34,7 @@ sure this can be useful for anyone else, but feel free to try it out.
     # on any hook you like
 
 ### git
-Can be done per project in .git/hooks, and can be set up in the templates for each new project with: 
+Can be done per project in .git/hooks, and can be set up in the templates for each new project with for example:  
 
     # In the git repo to be linked with project Foo
     medor repo $(git rev-parse --show-toplevel) Foo
@@ -43,7 +43,7 @@ Can be done per project in .git/hooks, and can be set up in the templates for ea
     mkdir -p ~/.git-templates/hooks
     git init  # in every existing project, to add the new hook template
 
-Then in the hooks themselves (e.g. `~/git-templates/hooks/pre-commit`), use
+Then in the hooks themselves (e.g. `~/.git-templates/hooks/pre-commit`), use
 
     medor repo $(git rev-parse --show-toplevel)
 
@@ -51,8 +51,7 @@ Then in the hooks themselves (e.g. `~/git-templates/hooks/pre-commit`), use
 ## TODO
 
 ### Features
-* Zsh autocompletion 
-* CLI to Show linked repo of projects
+* CLI to show linked repo of projects
 * Inactivity detection: pause on sleep / suspend, possibly based on input inactivity.
 * Show commits in reports
 * Warnings when stopped on a weekday during work hours?
