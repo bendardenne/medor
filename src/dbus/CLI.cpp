@@ -5,8 +5,10 @@
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time/posix_time/ptime.hpp>
+#include <hg/HgClient.h>
 #include <iostream>
 #include <sdbus-c++/IProxy.h>
+#include <storage/VcsStore.h>
 
 #include "dbus/CLI.h"
 #include "dbus/Constants.h"
@@ -16,8 +18,8 @@ using namespace medor;
 
 namespace greg = boost::gregorian;
 
-dbus::CLI::CLI(storage::ActivityStore activityStore, sdbus::IConnection& dbusConnection)
-    : _activityStore(activityStore),
+dbus::CLI::CLI(storage::ActivityStore activityStore, storage::VcsStore vcsStore, sdbus::IConnection& dbusConnection)
+    : _activityStore(activityStore), _vcsStore(vcsStore),
       _trackerProxy(sdbus::createProxy(dbusConnection, D_SERVICE_NAME, D_TRACKER_OBJECT)),
       _vcsHinterProxy(sdbus::createProxy(dbusConnection, D_SERVICE_NAME, D_VCSHINTER_OBJECT)) {}
 
@@ -70,7 +72,7 @@ void dbus::CLI::report(pt::time_period period) {
         _trackerProxy->getProperty("status").onInterface(D_TRACKER_INTERFACE);
     if (status.count("project") > 0) {
         pt::ptime start = pt::from_iso_string(status["start"].get<std::string>());
-        if(period.contains(start)) {
+        if (period.contains(start)) {
             model::Project project = {.id = status["project_id"], .name = status["project"]};
             pt::ptime now = pt::second_clock::local_time();
             allActivities.emplace_back(model::Activity(project, start, now));
@@ -91,10 +93,25 @@ void dbus::CLI::report(pt::time_period period) {
             byProject[activity.getProject().id].emplace_back(activity);
         }
 
-        for (const auto& project : byProject) {
+        for (const auto& activities : byProject) {
+            const model::Project& currentProject = activities.second[0].getProject();
+
             const std::string& spentOnProject =
-                util::time::formatDuration(util::time::aggregateTimes(project.second), false);
-            std::cout << "\t\t" << project.second[0].getProject().name << ": " << spentOnProject << std::endl;
+                util::time::formatDuration(util::time::aggregateTimes(activities.second), false);
+
+            std::cout << "\t\t" << currentProject.name << ": " << spentOnProject << std::endl;
+
+            std::vector<std::string> repos = _vcsStore.getReposFor(currentProject.id);
+            if (!repos.empty()) {
+                // TODO improve this and add support for git
+                for (const auto& repo : repos) {
+                    hg::HgClient hg(repo);
+                    std::string user = hg.config()["ui.username"];
+                    for (const auto& entry : hg.log(user, period)) {
+                        std::cout << "\t\t\t" << entry.summary << std::endl;
+                    }
+                }
+            }
         }
     }
 }

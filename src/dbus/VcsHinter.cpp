@@ -38,7 +38,7 @@ void dbus::VcsHinter::activityOnRepo(const std::string& repo) {
     BOOST_LOG_SEV(_logger, Info) << "Hint received from repo: " + repo;
     auto status = _tracker->status();
 
-    std::optional<int> projectId = _vcsStore->getProjectFor(repo);
+    std::optional<int> projectId = _vcsStore->getReposFor(repo);
 
     if (!projectId) {
         BOOST_LOG_SEV(_logger, Info) << "Hinted repo is not yet known: " << repo;

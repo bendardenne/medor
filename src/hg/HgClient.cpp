@@ -1,0 +1,145 @@
+//
+// Created by bdardenn on 4/28/20.
+//
+
+#include <boost/algorithm/string.hpp>
+#include <boost/date_time/period_formatter.hpp>
+#include <csignal>
+#include <iomanip>
+#include <regex>
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <unistd.h>
+
+#include "hg/HgClient.h"
+#include "hg/Protocol.h"
+
+namespace dt = boost::date_time;
+
+using namespace medor::hg;
+HgClient::HgClient(const std::string& repoPath, const std::string& socketPath) {
+    std::string resolvedSocket;
+    if (socketPath.empty()) {
+        char tmpFileTemplate[] = "medorhg_XXXXXX";
+        resolvedSocket = std::string(mktemp(tmpFileTemplate));
+    } else {
+        resolvedSocket = socketPath;
+    }
+
+    pid_t childPid = fork();
+    // TODO check fork error
+    // Spawn hg serve in the child process
+    if (childPid == 0) {
+        // HG serve prints some stuff on stdout. Redirect to /dev/null. Maybe we can redirect to logs.
+        freopen("/dev/null", "w", stdout);
+        execlp("hg",
+               "hg",
+               "serve",
+               "--config",
+               "ui.interactive=False",
+               "--cmdserver",
+               "unix",
+               "--address",
+               resolvedSocket.c_str(),
+               "-R",
+               repoPath.c_str(),
+               nullptr);
+        return;
+    }
+
+    // FIXME inotify wait for sock file
+    sleep(5);
+
+    _serverPid = childPid;
+    _sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
+    if (_sockfd == -1) {
+        // TODO
+        throw "";
+    }
+
+    struct sockaddr_un addr = {
+        .sun_family = AF_UNIX,
+    };
+    strncpy(addr.sun_path, resolvedSocket.c_str(), resolvedSocket.size());
+
+    int connection = connect(_sockfd, reinterpret_cast<const sockaddr*>(&addr), sizeof(addr));
+    if (connection != 0) {
+        // TODO add exception object
+        throw "Could not connect to hg serve";
+    }
+
+    // Read in welcome message
+    ChannelRecord record = hg::readRecord(_sockfd);
+    // TODO use encoding info to make sure we decode everything correctly.
+}
+
+HgClient::~HgClient() {
+    close(_sockfd);
+    kill(_serverPid, SIGTERM);
+}
+
+std::vector<medor::hg::LogEntry> HgClient::log() { return log("", pt::time_period(pt::ptime(), pt::ptime())); }
+
+std::vector<medor::hg::LogEntry> HgClient::log(const std::string& user, pt::time_period timePeriod) {
+    std::stringstream command;
+    command << "log;";
+
+    if (!user.empty()) {
+        command << "-u;" << user << ";";
+    }
+
+    if (!timePeriod.is_null()) {
+        dt::period_formatter<char> formatter(dt::period_formatter<char>::AS_CLOSED_RANGE, " to ", "", "", "");
+        command << "-d;";
+        formatter.put_period(command, command, ' ', timePeriod, pt::time_facet("%m/%d/%Y"));
+        command << ";";
+    }
+
+    std::vector<LogEntry> result;
+    std::regex field("(.+?):(.+)[\\r\\n]+");
+    for (auto& line : hg::runCommand(_sockfd, command.str())) {
+        LogEntry current;
+        auto fields = std::sregex_iterator(line.begin(), line.end(), field);
+
+        for (std::sregex_iterator i = fields; i != std::sregex_iterator(); ++i) {
+            std::smatch match = *i;
+            std::string key = match[1].str();
+            std::string value = match[2].str();
+
+            if (key == "changeset") {
+                size_t revSep = value.find(':');
+                std::string rev = line.substr(0, revSep);
+                std::string changeset = line.substr(revSep + 1);
+                current.changeset = changeset;
+            } else if (key == "user") {
+                current.user = value;
+            } else if (key == "summary") {
+                current.summary = value;
+            } else if (key == "date") {
+                //            std::tm t = {};
+                //            std::istringstream ss(value);
+                //            ss >> std::get_time(&t, "%a %b %d %H:%M:%S ")
+                //            current.date = std::get_time(&tm, "%b %d %Y %H:%M:%S");
+            } else {
+            }
+        }
+
+        result.emplace_back(current);
+    }
+
+    return result;
+}
+
+std::map<std::string, std::string> HgClient::config() {
+    std::map<std::string, std::string> result;
+    std::vector<std::string> lines = hg::runCommand(_sockfd, "config" /* -d " + date*/);
+
+    for (const auto& line : lines) {
+        size_t index = line.find('=');
+        std::string value = line.substr(index + 1);
+        boost::trim(value); // Remove  \n
+        result[line.substr(0, index)] = value;
+    }
+
+    return result;
+}

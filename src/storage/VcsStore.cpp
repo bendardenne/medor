@@ -23,7 +23,7 @@ void storage::VcsStore::addRepo(const std::string& repo, const model::Project& p
     sqlite3_finalize(newRepo);
 }
 
-std::optional<int> storage::VcsStore::getProjectFor(const std::string& repo) {
+std::optional<int> storage::VcsStore::getReposFor(const std::string& repo) {
     sqlite3_stmt* getProjectFor;
     sqlite3_prepare_v2(_db, "select id, path, project_id from repos where path like ?", -1, &getProjectFor, 0);
     sqlite3_bind_text(getProjectFor, 1, repo.c_str(), repo.length(), SQLITE_STATIC);
@@ -34,4 +34,19 @@ std::optional<int> storage::VcsStore::getProjectFor(const std::string& repo) {
     }
     sqlite3_finalize(getProjectFor);
     return ret;
+}
+
+std::vector<std::string> storage::VcsStore::getReposFor(int projectId) {
+    sqlite3_stmt* getReposFor;
+    sqlite3_prepare_v2(_db, "select path from repos where id is ?", -1, &getReposFor, 0);
+    sqlite3_bind_int(getReposFor, 1, projectId);
+
+    std::vector<std::string> result;
+    while (sqlite3_step(getReposFor) == SQLITE_ROW) {
+        std::string path = std::string(reinterpret_cast<const char*>(sqlite3_column_text(getReposFor, 0)));
+        result.emplace_back(path);
+    }
+
+    sqlite3_finalize(getReposFor);
+    return result;
 }

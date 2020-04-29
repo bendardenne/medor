@@ -2,14 +2,17 @@ cmake_minimum_required(VERSION 3.15)
 project(medor VERSION 0.0.1 DESCRIPTION "Time tracking tool")
 
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_BUILD_TYPE Debug)
+
 
 add_definitions(-DBOOST_LOG_DYN_LINK)
 find_package(Boost 1.65 REQUIRED program_options filesystem log_setup log date_time)
 
 add_subdirectory(src/util)
-add_subdirectory(src/dbus)
 add_subdirectory(src/model)
 add_subdirectory(src/storage)
+add_subdirectory(src/hg)
+add_subdirectory(src/dbus)
 
 add_executable(medor src/app/medor.cpp)
 add_executable(medord src/app/medord.cpp)

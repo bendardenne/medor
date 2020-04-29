@@ -104,8 +104,9 @@ int main(int argc, char** argv) {
         sqlite3_open_v2(dbFile.c_str(), &dbConnection, SQLITE_OPEN_READONLY, nullptr);
 
         storage::ActivityStore activityStore(dbConnection);
+        storage::VcsStore vcsStore(dbConnection);
         std::unique_ptr<sdbus::IConnection> dbusConnection = sdbus::createSessionBusConnection();
-        dbus::CLI cli(activityStore, *dbusConnection);
+        dbus::CLI cli(activityStore, vcsStore, *dbusConnection);
 
         // Call command callback.
         commands[cmd](cli, unrecognized);

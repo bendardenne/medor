@@ -4,6 +4,7 @@
 #pragma once
 
 #include <boost/date_time/posix_time/time_period.hpp>
+#include <storage/VcsStore.h>
 
 #include "storage/ActivityStore.h"
 
@@ -12,7 +13,7 @@ namespace pt = boost::posix_time;
 
 class CLI {
   public:
-    explicit CLI(storage::ActivityStore activityStore, sdbus::IConnection& dbusConnection);
+    explicit CLI(storage::ActivityStore activityStore, storage::VcsStore vcsStore, sdbus::IConnection& dbusConnection);
 
     void start(const std::string& activity);
 
@@ -37,6 +38,7 @@ class CLI {
 
   private:
     medor::storage::ActivityStore _activityStore;
+    medor::storage::VcsStore _vcsStore;
     std::unique_ptr<sdbus::IProxy> _trackerProxy;
     std::unique_ptr<sdbus::IProxy> _vcsHinterProxy;
 };

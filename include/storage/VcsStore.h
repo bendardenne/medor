@@ -3,9 +3,10 @@
 //
 #pragma once
 
+#include <sqlite3.h>
 #include <string>
 
-#include <sqlite3.h>
+#include "model/Activity.h"
 
 namespace medor::storage {
 
@@ -26,7 +27,13 @@ class VcsStore {
      * @param repo A repo path.
      * @return  The project linked to this repo, if any.
      */
-    std::optional<int> getProjectFor(const std::string& repo);
+    std::optional<int> getReposFor(const std::string& repo);
+
+    /**
+     * @param projectId A project ID
+     * @return A vector of all the known repos for this project.
+     */
+    std::vector<std::string> getReposFor(int projectId);
 
   private:
     sqlite3* _db;
