@@ -11,7 +11,7 @@ find_package(Boost 1.65 REQUIRED program_options filesystem log_setup log date_t
 add_subdirectory(src/util)
 add_subdirectory(src/model)
 add_subdirectory(src/storage)
-add_subdirectory(src/hg)
+add_subdirectory(src/vcs)
 add_subdirectory(src/dbus)
 
 add_executable(medor src/app/medor.cpp)

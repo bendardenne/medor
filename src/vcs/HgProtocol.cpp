@@ -8,11 +8,11 @@
 #include <unistd.h>
 #include <vector>
 
-#include "hg/Protocol.h"
+#include "vcs/HgProtocol.h"
 
 using namespace medor;
 
-hg::ChannelRecord hg::readRecord(int fd) {
+vcs::ChannelRecord vcs::readRecord(int fd) {
     char buffer[4 * 1024];
     if ((read(fd, buffer, 4 * 1024)) > 0) {
         auto channel = static_cast<Channel>(buffer[0]);
@@ -26,7 +26,7 @@ hg::ChannelRecord hg::readRecord(int fd) {
     throw ""; // TODO
 }
 
-std::vector<std::string> hg::runCommand(int fd, const std::string& command) {
+std::vector<std::string> vcs::runCommand(int fd, const std::string& command) {
     std::string rawCommand = "runcommand\n";
     std::string nullTerminated = command;
     std::replace(nullTerminated.begin(), nullTerminated.end(), ';', '\0');
@@ -41,7 +41,7 @@ std::vector<std::string> hg::runCommand(int fd, const std::string& command) {
     std::vector<std::string> result;
     ChannelRecord response;
     do {
-        response = hg::readRecord(fd);
+        response = vcs::readRecord(fd);
         switch (response.channel) {
         case Channel::Output:
             result.emplace_back(response.message);

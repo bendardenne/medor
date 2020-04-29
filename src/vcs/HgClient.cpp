@@ -11,12 +11,12 @@
 #include <sys/un.h>
 #include <unistd.h>
 
-#include "hg/HgClient.h"
-#include "hg/Protocol.h"
+#include "vcs/HgClient.h"
+#include "vcs/HgProtocol.h"
 
 namespace dt = boost::date_time;
 
-using namespace medor::hg;
+using namespace medor::vcs;
 HgClient::HgClient(const std::string& repoPath, const std::string& socketPath) {
     std::string resolvedSocket;
     if (socketPath.empty()) {
@@ -46,9 +46,8 @@ HgClient::HgClient(const std::string& repoPath, const std::string& socketPath) {
                nullptr);
         return;
     }
-
     // FIXME inotify wait for sock file
-    sleep(5);
+    sleep(1);
 
     _serverPid = childPid;
     _sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
@@ -69,7 +68,7 @@ HgClient::HgClient(const std::string& repoPath, const std::string& socketPath) {
     }
 
     // Read in welcome message
-    ChannelRecord record = hg::readRecord(_sockfd);
+    ChannelRecord record = vcs::readRecord(_sockfd);
     // TODO use encoding info to make sure we decode everything correctly.
 }
 
@@ -78,15 +77,12 @@ HgClient::~HgClient() {
     kill(_serverPid, SIGTERM);
 }
 
-std::vector<medor::hg::LogEntry> HgClient::log() { return log("", pt::time_period(pt::ptime(), pt::ptime())); }
+std::vector<medor::vcs::LogEntry> HgClient::log(pt::time_period timePeriod) {
+    std::string user = config()["ui.username"];
 
-std::vector<medor::hg::LogEntry> HgClient::log(const std::string& user, pt::time_period timePeriod) {
     std::stringstream command;
     command << "log;";
-
-    if (!user.empty()) {
-        command << "-u;" << user << ";";
-    }
+    command << "-u;" << user << ";";
 
     if (!timePeriod.is_null()) {
         dt::period_formatter<char> formatter(dt::period_formatter<char>::AS_CLOSED_RANGE, " to ", "", "", "");
@@ -97,7 +93,7 @@ std::vector<medor::hg::LogEntry> HgClient::log(const std::string& user, pt::time
 
     std::vector<LogEntry> result;
     std::regex field("(.+?):(.+)[\\r\\n]+");
-    for (auto& line : hg::runCommand(_sockfd, command.str())) {
+    for (auto& line : vcs::runCommand(_sockfd, command.str())) {
         LogEntry current;
         auto fields = std::sregex_iterator(line.begin(), line.end(), field);
 
@@ -105,22 +101,13 @@ std::vector<medor::hg::LogEntry> HgClient::log(const std::string& user, pt::time
             std::smatch match = *i;
             std::string key = match[1].str();
             std::string value = match[2].str();
-
-            if (key == "changeset") {
-                size_t revSep = value.find(':');
-                std::string rev = line.substr(0, revSep);
-                std::string changeset = line.substr(revSep + 1);
-                current.changeset = changeset;
-            } else if (key == "user") {
-                current.user = value;
-            } else if (key == "summary") {
+            if (key == "summary") {
                 current.summary = value;
             } else if (key == "date") {
                 //            std::tm t = {};
                 //            std::istringstream ss(value);
                 //            ss >> std::get_time(&t, "%a %b %d %H:%M:%S ")
                 //            current.date = std::get_time(&tm, "%b %d %Y %H:%M:%S");
-            } else {
             }
         }
 
@@ -132,7 +119,7 @@ std::vector<medor::hg::LogEntry> HgClient::log(const std::string& user, pt::time
 
 std::map<std::string, std::string> HgClient::config() {
     std::map<std::string, std::string> result;
-    std::vector<std::string> lines = hg::runCommand(_sockfd, "config" /* -d " + date*/);
+    std::vector<std::string> lines = vcs::runCommand(_sockfd, "config" /* -d " + date*/);
 
     for (const auto& line : lines) {
         size_t index = line.find('=');

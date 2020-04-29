@@ -5,7 +5,6 @@
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time/posix_time/ptime.hpp>
-#include <hg/HgClient.h>
 #include <iostream>
 #include <sdbus-c++/IProxy.h>
 #include <storage/VcsStore.h>
@@ -13,6 +12,7 @@
 #include "dbus/CLI.h"
 #include "dbus/Constants.h"
 #include "util/time.h"
+#include "vcs/HgClient.h"
 
 using namespace medor;
 
@@ -105,9 +105,8 @@ void dbus::CLI::report(pt::time_period period) {
             if (!repos.empty()) {
                 // TODO improve this and add support for git
                 for (const auto& repo : repos) {
-                    hg::HgClient hg(repo);
-                    std::string user = hg.config()["ui.username"];
-                    for (const auto& entry : hg.log(user, period)) {
+                    std::unique_ptr<vcs::IVcsClient> hg = vcs::IVcsClient::create(repo);
+                    for (const auto& entry : hg->log(period)) {
                         std::cout << "\t\t\t" << entry.summary << std::endl;
                     }
                 }
