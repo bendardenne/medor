@@ -67,7 +67,7 @@ void dbus::Tracker::resume() {
 
     auto activities = this->_activities->getRecentProjects(1);
 
-    if (activities.size() == 0) {
+    if (activities.empty()) {
         BOOST_LOG_SEV(_logger, Error) << "No project to resume.";
         return;
     }

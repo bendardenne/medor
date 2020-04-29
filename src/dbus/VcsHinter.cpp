@@ -41,8 +41,16 @@ void dbus::VcsHinter::activityOnRepo(const std::string& repo) {
     std::optional<int> projectId = _vcsStore->getProjectFor(repo);
 
     if (!projectId) {
-        BOOST_LOG_SEV(_logger, Warning) << "Hinted repo is not yet known: " << repo;
-        // TODO Notify here too, but no more than once per repo probably (with grace period?)
+        BOOST_LOG_SEV(_logger, Info) << "Hinted repo is not yet known: " << repo;
+        if (status.count("project")) {
+            auto projectName = status["project"].get<std::string>();
+            auto addToCurrent = [this, projectName, repo]() { addRepo(projectName, repo); };
+
+            // TODO if send allowed multiple actions, we could have another action to stop the active project.
+            _notifier->send(
+                "New repo detected", "Link to <b> " + projectName + "</b>?", "addToCurrent", "Yes", addToCurrent);
+        }
+
         return;
     }
 
@@ -55,5 +63,6 @@ void dbus::VcsHinter::activityOnRepo(const std::string& repo) {
     std::string projectName = _projectStore->getProjectForId(projectId.value()).value().name;
     BOOST_LOG_SEV(_logger, Warning) << "Hinted project is not yet being tracked:" << projectName;
     auto startProject = [this, projectName]() { _tracker->start(projectName); };
-    _notifier->send("Activity detected", "Are you working on <b> " + projectName + "</b>?", "startProject", "Yes", startProject);
+    _notifier->send(
+        "Activity detected", "Are you working on <b> " + projectName + "</b>?", "startProject", "Yes", startProject);
 }
