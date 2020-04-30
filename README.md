@@ -1,4 +1,7 @@
 # Medor
+
+[![Build Status](https://travis-ci.com/bendardenne/medor.svg?branch=master)](https://travis-ci.com/bendardenne/medor)
+
 Medor is a time tracking tool. I've never found a time tracking tool that did exactly what I needed, so I wrote my own.
 
 I also use it as a pretext to teach myself about some things I don't know yet (dbus, boost libraries, ...). So I'm not 
@@ -66,6 +69,7 @@ Then in the hooks themselves (e.g. `~/.git-templates/hooks/pre-commit`), use
     - Could be both if e.g. you want to specify later what you have just done? 
 * Interface to edit / delete activities / add past activities  (GUI? let's go nuts)
 * Add a way to get help about individual commands (a "help" command?).
+
 ### "Production-readiness"  (i.e. will probably never do any this)
 * Verify concurrency in SQLite
 * Add a manpage

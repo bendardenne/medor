@@ -119,7 +119,7 @@ std::vector<medor::vcs::LogEntry> HgClient::log(pt::time_period timePeriod) {
 
 std::map<std::string, std::string> HgClient::config() {
     std::map<std::string, std::string> result;
-    std::vector<std::string> lines = vcs::runCommand(_sockfd, "config" /* -d " + date*/);
+    std::vector<std::string> lines = vcs::runCommand(_sockfd, "config");
 
     for (const auto& line : lines) {
         size_t index = line.find('=');

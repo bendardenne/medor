@@ -1,0 +1,19 @@
+language: cpp
+dist: bionic
+
+compiler:
+  - gcc
+
+install:
+  - pip install --user conan
+  - conan user
+  - conan remote add bendardenne-bintray https://api.bintray.com/conan/bendardenne/bendardenne-conan
+
+before_script:
+  - mkdir build
+  - cd build
+
+script:
+  - conan install .. -s compiler.libcxx=libstdc++11
+  - cmake ..
+  - cmake --build .

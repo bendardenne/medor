@@ -1,12 +1,11 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.12)
 project(medor VERSION 0.0.1 DESCRIPTION "Time tracking tool")
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_BUILD_TYPE Debug)
 
-
-add_definitions(-DBOOST_LOG_DYN_LINK)
-find_package(Boost 1.65 REQUIRED program_options filesystem log_setup log date_time)
+include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+conan_basic_setup()
 
 add_subdirectory(src/util)
 add_subdirectory(src/model)
@@ -19,8 +18,8 @@ add_executable(medord src/app/medord.cpp)
 
 target_include_directories(medord PUBLIC ${CMAKE_SOURCE_DIR}/include)
 
-target_link_libraries(medord LINK_PUBLIC dbus ${Boost_LIBRARIES})
-target_link_libraries(medor LINK_PUBLIC dbus ${Boost_LIBRARIES})
+target_link_libraries(medord LINK_PUBLIC dbus ${CONAN_LIBS})
+target_link_libraries(medor LINK_PUBLIC dbus ${CONAN_LIBS})
 
 install(TARGETS medord DESTINATION bin)
 install(TARGETS medor DESTINATION bin)

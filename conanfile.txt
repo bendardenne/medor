@@ -1,0 +1,7 @@
+[requires]
+boost/1.71.0@conan/stable
+sdbus-cpp/0.8.1@bendardenne/stable
+sqlite3/3.31.1
+
+[generators]
+cmake
