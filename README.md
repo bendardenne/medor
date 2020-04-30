@@ -22,7 +22,7 @@ sure this can be useful for anyone else, but feel free to try it out.
     cmake .. 
     make
     
-`medord` is a service which exposes dbus objects with various tracking methods.
+`medord` is a service which exposes dbus objects to control the time tracker.
 `medor` is a CLI to control medord.
 
 
@@ -57,7 +57,7 @@ Then in the hooks themselves (e.g. `~/.git-templates/hooks/pre-commit`), use
 ### Features
 * CLI to show linked repo of projects
 * Inactivity detection: pause on sleep / suspend, possibly based on input inactivity.
-* Show commits in reports
+* Show GIT commits in reports
 * Warnings when stopped on a weekday during work hours?
 * Add a optional comment field to activities?  
     - Idea 1     

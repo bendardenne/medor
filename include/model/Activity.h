@@ -3,8 +3,9 @@
 //
 #pragma once
 
-#include <string>
 #include <boost/date_time/posix_time/ptime.hpp>
+#include <boost/date_time/posix_time/time_period.hpp>
+#include <string>
 
 namespace pt = boost::posix_time;
 
@@ -34,6 +35,8 @@ class Activity {
     pt::ptime getStart() const;
 
     pt::ptime getEnd() const;
+
+    pt::time_period getPeriod() const;
 
     void setEnd(const pt::ptime& endTime);
 

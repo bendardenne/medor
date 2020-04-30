@@ -23,6 +23,8 @@ struct LogEntry {
 class IVcsClient {
 
   public:
+    virtual ~IVcsClient() = 0;
+
     virtual std::vector<LogEntry> log(pt::time_period date) = 0;
 
     static std::unique_ptr<IVcsClient> create(const std::string& repo);

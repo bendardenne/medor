@@ -100,13 +100,15 @@ void dbus::CLI::report(pt::time_period period) {
                 util::time::formatDuration(util::time::aggregateTimes(activities.second), false);
 
             std::cout << "\t\t" << currentProject.name << ": " << spentOnProject << std::endl;
-
             std::vector<std::string> repos = _vcsStore.getReposFor(currentProject.id);
+
             if (!repos.empty()) {
-                for (const auto& repo : repos) {
-                    std::unique_ptr<vcs::IVcsClient> hg = vcs::IVcsClient::create(repo);
-                    for (const auto& entry : hg->log(period)) {
-                        std::cout << "\t\t\t" << entry.summary << std::endl;
+                for (const auto& activity : activities.second) {
+                    for (const auto& repo : repos) {
+                        std::unique_ptr<vcs::IVcsClient> hg = vcs::IVcsClient::create(repo);
+                        for (const auto& entry : hg->log(activity.getPeriod())) {
+                            std::cout << "\t\t\t" << entry.summary << std::endl;
+                        }
                     }
                 }
             }

@@ -38,7 +38,7 @@ std::optional<int> storage::VcsStore::getReposFor(const std::string& repo) {
 
 std::vector<std::string> storage::VcsStore::getReposFor(int projectId) {
     sqlite3_stmt* getReposFor;
-    sqlite3_prepare_v2(_db, "select path from repos where id is ?", -1, &getReposFor, 0);
+    sqlite3_prepare_v2(_db, "select path from repos where project_id is ?", -1, &getReposFor, 0);
     sqlite3_bind_int(getReposFor, 1, projectId);
 
     std::vector<std::string> result;

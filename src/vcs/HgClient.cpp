@@ -35,6 +35,7 @@ HgClient::HgClient(const std::string& repoPath, const std::string& socketPath) {
     if (childPid == 0) {
         // HG serve prints some stuff on stdout. Redirect to /dev/null. Maybe we can redirect to logs.
         freopen("/dev/null", "w", stdout);
+        freopen("/dev/null", "w", stderr);
         execlp("hg",
                "hg",
                "serve",

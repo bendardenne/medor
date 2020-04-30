@@ -192,8 +192,11 @@ void quiet(dbus::CLI& cli, const std::vector<std::string>& arguments) {
 
 void repo(dbus::CLI& cli, const std::vector<std::string>& arguments) {
     po::options_description options("repo options");
-    options.add_options()("project", po::value<std::string>(), "Project")(
-        "path", po::value<std::string>(), "Repo path");
+    // clang-format off
+    options.add_options()
+    ("project", po::value<std::string>(), "Project")
+    ("path", po::value<std::string>(), "Repo path");
+    // clang-format on
 
     po::positional_options_description pos;
     pos.add("path", 1);
