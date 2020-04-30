@@ -103,7 +103,6 @@ void dbus::CLI::report(pt::time_period period) {
 
             std::vector<std::string> repos = _vcsStore.getReposFor(currentProject.id);
             if (!repos.empty()) {
-                // TODO improve this and add support for git
                 for (const auto& repo : repos) {
                     std::unique_ptr<vcs::IVcsClient> hg = vcs::IVcsClient::create(repo);
                     for (const auto& entry : hg->log(period)) {

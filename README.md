@@ -18,6 +18,7 @@ sure this can be useful for anyone else, but feel free to try it out.
 
     git clone https://github.com/bendardenne/medor
     cd medor && mkdir build && cd build
+    conan install .. 
     cmake .. 
     make
     

@@ -27,7 +27,10 @@ HgClient::HgClient(const std::string& repoPath, const std::string& socketPath) {
     }
 
     pid_t childPid = fork();
-    // TODO check fork error
+    if (childPid == -1) {
+        BOOST_LOG_SEV(_logger, Critical) << "Could not fork process. Errno: " << errno;
+    }
+
     // Spawn hg serve in the child process
     if (childPid == 0) {
         // HG serve prints some stuff on stdout. Redirect to /dev/null. Maybe we can redirect to logs.

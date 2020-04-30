@@ -5,8 +5,6 @@
 #include "util/time.h"
 #include "model/Activity.h"
 
-// using namespace medor::util;
-
 using namespace medor::util;
 namespace pt = boost::posix_time;
 
