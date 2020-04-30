@@ -6,6 +6,7 @@
 #include <boost/date_time/posix_time/time_period.hpp>
 #include <storage/VcsStore.h>
 
+#include "model/Activity.h"
 #include "storage/ActivityStore.h"
 
 namespace medor::dbus {
@@ -35,8 +36,9 @@ class CLI {
 
     void activityOnRepo(const std::string& path);
 
-
   private:
+    void reportRepoActivity(std::vector<model::Activity> activities);
+
     medor::storage::ActivityStore _activityStore;
     medor::storage::VcsStore _vcsStore;
     std::unique_ptr<sdbus::IProxy> _trackerProxy;

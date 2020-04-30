@@ -81,6 +81,7 @@ void dbus::CLI::report(pt::time_period period) {
 
     std::map<greg::date, std::vector<model::Activity>> byDay;
 
+    // Group by day
     for (const auto& activity : allActivities) {
         byDay[activity.getStart().date()].emplace_back(activity);
     }
@@ -89,27 +90,38 @@ void dbus::CLI::report(pt::time_period period) {
         std::cout << forDay.first.day_of_week().as_long_string() << std::endl;
         std::map<int, std::vector<model::Activity>> byProject;
 
+        // Group by project, for this day
         for (const auto& activity : forDay.second) {
             byProject[activity.getProject().id].emplace_back(activity);
         }
 
+        // For every project, print spent time, on that day
         for (const auto& activities : byProject) {
             const model::Project& currentProject = activities.second[0].getProject();
-
             const std::string& spentOnProject =
                 util::time::formatDuration(util::time::aggregateTimes(activities.second), false);
 
             std::cout << "\t\t" << currentProject.name << ": " << spentOnProject << std::endl;
-            std::vector<std::string> repos = _vcsStore.getReposFor(currentProject.id);
 
-            if (!repos.empty()) {
-                for (const auto& activity : activities.second) {
-                    for (const auto& repo : repos) {
-                        std::unique_ptr<vcs::IVcsClient> hg = vcs::IVcsClient::create(repo);
-                        for (const auto& entry : hg->log(activity.getPeriod())) {
-                            std::cout << "\t\t\t" << entry.summary << std::endl;
-                        }
-                    }
+            // And possibly VCS activity on this project, for this day
+            reportRepoActivity(activities.second);
+        }
+    }
+}
+
+void dbus::CLI::reportRepoActivity(std::vector<model::Activity> activities) {
+    const model::Project& currentProject = activities[0].getProject();
+    std::vector<std::string> repos = _vcsStore.getReposFor(currentProject.id);
+
+    // Instead of checking each single period, we could make a single period that spans all periods of all activities.
+    // This would mean a single call to log(), and would include possible commits done when the project was no active.
+    // Which is desirable? Probably
+    if (!repos.empty()) {
+        for (const auto& repo : repos) {
+            std::unique_ptr<vcs::IVcsClient> vcs = vcs::IVcsClient::create(repo);
+            for (const auto& activity : activities) {
+                for (const auto& entry : vcs->log(activity.getPeriod())) {
+                    std::cout << "\t\t\t" << entry.summary << std::endl;
                 }
             }
         }
