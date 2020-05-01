@@ -27,6 +27,10 @@ class IVcsClient {
 
     virtual std::vector<LogEntry> log(pt::time_period date) = 0;
 
+    /**
+     * @param repo A path to a VCS repository
+     * @return A VCS client, or nullptr if none could be opened for the given path.
+     */
     static std::unique_ptr<IVcsClient> create(const std::string& repo);
 
   protected:

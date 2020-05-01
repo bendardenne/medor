@@ -56,8 +56,8 @@ Then in the hooks themselves (e.g. `~/.git-templates/hooks/pre-commit`), use
 
 ### Features
 * CLI to show linked repo of projects
+* Error handling via DBus
 * Inactivity detection: pause on sleep / suspend, possibly based on input inactivity.
-* Show GIT commits in reports
 * Warnings when stopped on a weekday during work hours?
 * Add a optional comment field to activities?  
     - Idea 1     

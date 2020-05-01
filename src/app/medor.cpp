@@ -105,6 +105,7 @@ int main(int argc, char** argv) {
 
         storage::ActivityStore activityStore(dbConnection);
         storage::VcsStore vcsStore(dbConnection);
+
         std::unique_ptr<sdbus::IConnection> dbusConnection = sdbus::createSessionBusConnection();
         dbus::CLI cli(activityStore, vcsStore, *dbusConnection);
 
@@ -194,6 +195,7 @@ void repo(dbus::CLI& cli, const std::vector<std::string>& arguments) {
     po::options_description options("repo options");
     // clang-format off
     options.add_options()
+    ("remove,r", "Remove the given repo for the given project")
     ("project", po::value<std::string>(), "Project")
     ("path", po::value<std::string>(), "Repo path");
     // clang-format on
@@ -220,7 +222,11 @@ void repo(dbus::CLI& cli, const std::vector<std::string>& arguments) {
     }
 
     if (vm.count("path") && vm.count("project")) {
-        cli.addRepo(vm["project"].as<std::string>(), path.string());
+        if (vm.count("remove")) {
+            cli.removeRepo(vm["project"].as<std::string>(), path.string());
+        } else {
+            cli.addRepo(vm["project"].as<std::string>(), path.string());
+        }
         return;
     }
 

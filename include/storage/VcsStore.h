@@ -24,6 +24,12 @@ class VcsStore {
     void addRepo(const std::string& repo, const model::Project& project);
 
     /**
+     * @param repo A path to a repository.
+     * @param project  The project from which to remove the repo.
+     */
+    void removeRepo(const std::string& repo, const model::Project& project);
+
+    /**
      * @param repo A repo path.
      * @return  The project linked to this repo, if any.
      */

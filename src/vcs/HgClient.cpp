@@ -33,7 +33,7 @@ HgClient::HgClient(const std::string& repoPath, const std::string& socketPath) {
 
     // Spawn hg serve in the child process
     if (childPid == 0) {
-        // HG serve prints some stuff on stdout. Redirect to /dev/null. Maybe we can redirect to logs.
+        // HG serve prints some stuff on stdout. Redirect to /dev/null.
         freopen("/dev/null", "w", stdout);
         freopen("/dev/null", "w", stderr);
         execlp("hg",
@@ -50,14 +50,18 @@ HgClient::HgClient(const std::string& repoPath, const std::string& socketPath) {
                nullptr);
         return;
     }
-    // FIXME inotify wait for sock file
-    sleep(1);
+
+    //    int notifyFd = inotify_init();
+    //    inotify_add_watch(notifyFd, resolvedSocket.c_str(), IN_CREATE)
+    //
+    //    // FIXME inotify wait for sock file
+    //    sleep(1);
 
     _serverPid = childPid;
     _sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
     if (_sockfd == -1) {
-        // TODO
-        throw "";
+        BOOST_LOG_SEV(_logger, Error) << "Could not open socket. Errno: " << errno;
+        throw std::runtime_error("Could not open socket for hg serve");
     }
 
     struct sockaddr_un addr = {
@@ -65,13 +69,12 @@ HgClient::HgClient(const std::string& repoPath, const std::string& socketPath) {
     };
     strncpy(addr.sun_path, resolvedSocket.c_str(), resolvedSocket.size());
 
-    int connection = connect(_sockfd, reinterpret_cast<const sockaddr*>(&addr), sizeof(addr));
-    if (connection != 0) {
-        // TODO add exception object
-        throw "Could not connect to hg serve";
+    // TODO improve this
+    int connection;
+    while ((connection = connect(_sockfd, reinterpret_cast<const sockaddr*>(&addr), sizeof(addr))) != 0) {
     }
 
-    // Read in welcome message
+    // Read in welcome message.
     ChannelRecord record = vcs::readRecord(_sockfd);
     // TODO use encoding info to make sure we decode everything correctly.
 }
@@ -91,7 +94,7 @@ std::vector<medor::vcs::LogEntry> HgClient::log(pt::time_period timePeriod) {
     if (!timePeriod.is_null()) {
         dt::period_formatter<char> formatter(dt::period_formatter<char>::AS_CLOSED_RANGE, " to ", "", "", "");
         command << "-d;";
-        formatter.put_period(command, command, ' ', timePeriod, pt::time_facet("%m/%d/%Y"));
+        formatter.put_period(command, command, ' ', timePeriod, pt::time_facet("%Y-%m-%d %H:%M:%S"));
         command << ";";
     }
 
@@ -105,6 +108,7 @@ std::vector<medor::vcs::LogEntry> HgClient::log(pt::time_period timePeriod) {
             std::smatch match = *i;
             std::string key = match[1].str();
             std::string value = match[2].str();
+            boost::trim(value);
             if (key == "summary") {
                 current.summary = value;
             } else if (key == "date") {

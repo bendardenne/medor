@@ -8,6 +8,11 @@ using namespace medor::vcs;
 GitClient::GitClient(const std::string& repoPath) {
     git_libgit2_init();
     int error = git_repository_open(&_repo, repoPath.c_str());
+
+    if (error < 0) {
+        const git_error* e = git_error_last();
+        throw std::runtime_error("Could not open git repository: " + std::string(e->message));
+    }
 }
 
 GitClient::~GitClient() {

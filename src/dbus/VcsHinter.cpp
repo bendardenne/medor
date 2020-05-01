@@ -20,9 +20,11 @@ dbus::VcsHinter::VcsHinter(sdbus::IConnection& dbusConnection,
     namespace ph = std::placeholders;
 
     std::function<void(std::string, std::string)> addRepo = std::bind(&VcsHinter::addRepo, this, ph::_1, ph::_2);
+    std::function<void(std::string, std::string)> removeRepo = std::bind(&VcsHinter::removeRepo, this, ph::_1, ph::_2);
     std::function<void(std::string)> activityOnRepo = std::bind(&VcsHinter::activityOnRepo, this, ph::_1);
 
     _dbusObject->registerMethod("addRepo").onInterface(D_VCSHINTER_INTERFACE).implementedAs(addRepo);
+    _dbusObject->registerMethod("removeRepo").onInterface(D_VCSHINTER_INTERFACE).implementedAs(removeRepo);
     _dbusObject->registerMethod("activityOnRepo").onInterface(D_VCSHINTER_INTERFACE).implementedAs(activityOnRepo);
 
     _dbusObject->finishRegistration();
@@ -32,6 +34,12 @@ void dbus::VcsHinter::addRepo(const std::string& project, const std::string& rep
     int projectId = _projectStore->getIdForProject(project);
     _vcsStore->addRepo(repo, {.id = projectId, .name = project});
     BOOST_LOG_SEV(_logger, Info) << "Added repo for project " << project << ": " << repo;
+}
+
+void dbus::VcsHinter::removeRepo(const std::string& project, const std::string& repo) {
+    int projectId = _projectStore->getIdForProject(project);
+    _vcsStore->removeRepo(repo, {.id = projectId, .name = project});
+    BOOST_LOG_SEV(_logger, Info) << "Removing repo for project " << project << ": " << repo;
 }
 
 void dbus::VcsHinter::activityOnRepo(const std::string& repo) {
@@ -46,7 +54,6 @@ void dbus::VcsHinter::activityOnRepo(const std::string& repo) {
             auto projectName = status["project"].get<std::string>();
             auto addToCurrent = [this, projectName, repo]() { addRepo(projectName, repo); };
 
-            // TODO if send allowed multiple actions, we could have another action to stop the active project.
             _notifier->send(
                 "New repo detected", "Link to <b> " + projectName + "</b>?", "addToCurrent", "Yes", addToCurrent);
         }

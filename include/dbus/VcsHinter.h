@@ -35,7 +35,7 @@ class VcsHinter {
 
   private:
     void addRepo(const std::string& project, const std::string& repo);
-
+    void removeRepo(const std::string& project, const std::string& repo);
     void activityOnRepo(const std::string& repo);
 
     logsrc::severity_logger<Severity> _logger;

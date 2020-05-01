@@ -23,6 +23,16 @@ void storage::VcsStore::addRepo(const std::string& repo, const model::Project& p
     sqlite3_finalize(newRepo);
 }
 
+void storage::VcsStore::removeRepo(const std::string& repo, const model::Project& project) {
+    sqlite3_stmt* removeRepo;
+
+    sqlite3_prepare_v2(_db, "delete from repos where path is ? and project_id is ? ", -1, &removeRepo, 0);
+    sqlite3_bind_text(removeRepo, 1, repo.c_str(), repo.length(), SQLITE_STATIC);
+    sqlite3_bind_int(removeRepo, 2, project.id);
+    sqlite3_step(removeRepo);
+    sqlite3_finalize(removeRepo);
+}
+
 std::optional<int> storage::VcsStore::getReposFor(const std::string& repo) {
     sqlite3_stmt* getProjectFor;
     sqlite3_prepare_v2(_db, "select id, path, project_id from repos where path like ?", -1, &getProjectFor, 0);

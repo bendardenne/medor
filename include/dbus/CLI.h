@@ -4,13 +4,17 @@
 #pragma once
 
 #include <boost/date_time/posix_time/time_period.hpp>
+#include <boost/log/sources/severity_logger.hpp>
+#include <boost/log/trivial.hpp>
 #include <storage/VcsStore.h>
 
 #include "model/Activity.h"
 #include "storage/ActivityStore.h"
+#include "util/logging.h"
 
 namespace medor::dbus {
 namespace pt = boost::posix_time;
+namespace logsrc = boost::log::sources;
 
 class CLI {
   public:
@@ -34,11 +38,14 @@ class CLI {
 
     void addRepo(const std::string& project, const std::string& path);
 
+    void removeRepo(const std::string& project, const std::string& path);
+
     void activityOnRepo(const std::string& path);
 
   private:
     void reportRepoActivity(std::vector<model::Activity> activities);
 
+    logsrc::severity_logger<Severity> _logger;
     medor::storage::ActivityStore _activityStore;
     medor::storage::VcsStore _vcsStore;
     std::unique_ptr<sdbus::IProxy> _trackerProxy;

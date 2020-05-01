@@ -119,6 +119,10 @@ void dbus::CLI::reportRepoActivity(std::vector<model::Activity> activities) {
     if (!repos.empty()) {
         for (const auto& repo : repos) {
             std::unique_ptr<vcs::IVcsClient> vcs = vcs::IVcsClient::create(repo);
+            if (!vcs) {
+                BOOST_LOG_SEV(_logger, Error) << "Could not open repo (" << currentProject.name << "): " << repo;
+                continue;
+            }
             for (const auto& activity : activities) {
                 for (const auto& entry : vcs->log(activity.getPeriod())) {
                     std::cout << "\t\t\t" << entry.summary << std::endl;
@@ -136,6 +140,10 @@ bool dbus::CLI::isQuiet() { return _trackerProxy->getProperty("quiet").onInterfa
 
 void dbus::CLI::addRepo(const std::string& project, const std::string& path) {
     _vcsHinterProxy->callMethod("addRepo").onInterface(D_VCSHINTER_INTERFACE).withArguments(project, path);
+}
+
+void dbus::CLI::removeRepo(const std::string& project, const std::string& path) {
+    _vcsHinterProxy->callMethod("removeRepo").onInterface(D_VCSHINTER_INTERFACE).withArguments(project, path);
 }
 
 void dbus::CLI::activityOnRepo(const std::string& path) {
