@@ -113,6 +113,9 @@ void dbus::CLI::reportRepoActivity(std::vector<model::Activity> activities) {
     // Instead of checking each single period, we could make a single period that spans all periods of all activities.
     // This would mean a single call to log(), and would include possible commits done when the project was no active.
     // Which is desirable? Probably
+
+    std::stringstream ss;
+    ss.imbue(std::locale(std::locale::classic(), new pt::time_facet("%H:%M")));
     if (!repos.empty()) {
         for (const auto& repo : repos) {
             std::unique_ptr<vcs::IVcsClient> vcs = vcs::IVcsClient::create(repo);
@@ -122,7 +125,9 @@ void dbus::CLI::reportRepoActivity(std::vector<model::Activity> activities) {
             }
             for (const auto& activity : activities) {
                 for (const auto& entry : vcs->log(activity.getPeriod())) {
-                    std::cout << "\t\t\t" << entry.summary << std::endl;
+                    ss.str("");
+                    ss << entry.date;
+                    std::cout << "\t\t\t(" << ss.str() << ") " << entry.summary << std::endl;
                 }
             }
         }

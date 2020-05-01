@@ -41,12 +41,13 @@ std::vector<LogEntry> GitClient::log(pt::time_period date) {
         }
 
         if (date.contains(commitTime)) {
-            entries.push_back({.summary = git_commit_summary(commit)});
+            entries.push_back({.summary = git_commit_summary(commit), .date = commitTime});
         }
 
         git_commit_free(commit);
     }
     git_revwalk_free(walker);
-
+    // We could also ask git for commits in reverse order, but this seems simpler
+    std::reverse(entries.begin(), entries.end());
     return entries;
 }

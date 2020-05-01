@@ -7,7 +7,6 @@
 #include <csignal>
 #include <iomanip>
 #include <regex>
-#include <sys/inotify.h>
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <unistd.h>
@@ -65,7 +64,7 @@ HgClient::HgClient(const std::string& repoPath, const std::string& socketPath) {
         throw std::runtime_error("Could not open socket for hg serve");
     }
 
-    struct sockaddr_un addr = {
+    sockaddr_un addr = {
         .sun_family = AF_UNIX,
     };
     strncpy(addr.sun_path, resolvedSocket.c_str(), resolvedSocket.size());
@@ -114,8 +113,8 @@ std::vector<medor::vcs::LogEntry> HgClient::log(pt::time_period timePeriod) {
                 current.summary = value;
             } else if (key == "date") {
                 std::stringstream ss(value);
-                ss.imbue(std::locale(std::locale::classic(), new pt::time_input_facet("%a %b %d %H:%M:%S %Y %q")));
                 pt::ptime time;
+                ss.imbue(std::locale(std::locale::classic(), new pt::time_input_facet("%a %b %d %H:%M:%S %Y %q")));
                 ss >> time;
                 current.date = time;
             }
@@ -123,7 +122,7 @@ std::vector<medor::vcs::LogEntry> HgClient::log(pt::time_period timePeriod) {
 
         result.emplace_back(current);
     }
-
+    std::reverse(result.begin(), result.end());
     return result;
 }
 
