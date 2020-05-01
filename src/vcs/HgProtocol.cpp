@@ -12,36 +12,36 @@
 
 using namespace medor;
 
-vcs::ChannelRecord vcs::readRecord(int fd) {
-    char buffer[4 * 1024];
-    if ((read(fd, buffer, 4 * 1024)) > 0) {
-        auto channel = static_cast<Channel>(buffer[0]);
+vcs::ChannelRecord vcs::readRecord(proc::ipstream& hgOut) {
+    auto channel = static_cast<Channel>(hgOut.get());
 
-        // Server uses big endian by specification.
-        uint32_t length =
-            (uint8_t)buffer[1] << 24u | (uint8_t)buffer[2] << 16u | (uint8_t)buffer[3] << 8u | (uint8_t)buffer[4];
-        return {.channel = channel, .message = std::string(buffer + 5, length)};
-    }
+    // Server uses big endian by specification.
+    // TODO We can probably use ntohl or something
+    uint32_t length =
+        (uint8_t)hgOut.get() << 24u | (uint8_t)hgOut.get() << 16u | (uint8_t)hgOut.get() << 8u | (uint8_t)hgOut.get();
 
-    throw std::runtime_error("Failed to read response from hg command server");
+    char buffer[length];
+    hgOut.read(buffer, length);
+    return {.channel = channel, .message = std::string(buffer, length)};
 }
 
-std::vector<std::string> vcs::runCommand(int fd, const std::string& command) {
+std::vector<std::string> vcs::runCommand(proc::ipstream& hgOut, proc::opstream& hgIn, const std::string& command) {
     std::string rawCommand = "runcommand\n";
     std::string nullTerminated = command;
-    std::replace(nullTerminated.begin(), nullTerminated.end(), ';', '\0');
-
     uint32_t commandLength = nullTerminated.size();
     uint32_t bigEndianSize = htonl(commandLength);
 
-    write(fd, rawCommand.c_str(), rawCommand.size());
-    write(fd, &bigEndianSize, 4);
-    write(fd, nullTerminated.c_str(), nullTerminated.size());
+    std::replace(nullTerminated.begin(), nullTerminated.end(), ';', '\0');
+
+    hgIn << rawCommand;
+    hgIn.write((const char*)&bigEndianSize, 4);
+    hgIn.write(nullTerminated.c_str(), commandLength);
+    hgIn.flush();
 
     std::vector<std::string> result;
     ChannelRecord response;
     do {
-        response = vcs::readRecord(fd);
+        response = vcs::readRecord(hgOut);
         switch (response.channel) {
         case Channel::Output:
             result.emplace_back(response.message);

@@ -4,11 +4,14 @@
 
 #pragma once
 
+#include <boost/process.hpp>
 #include <map>
 #include <string>
 #include <vector>
 
 #include "vcs/IVcsClient.h"
+
+namespace proc = boost::process;
 
 namespace medor::vcs {
 
@@ -24,8 +27,9 @@ class HgClient : public IVcsClient {
     std::map<std::string, std::string> config();
 
   private:
-    pid_t _serverPid;
-    int _sockfd;
+    proc::child _child;
+    proc::ipstream _out;
+    proc::opstream _in;
 };
 
 } // namespace medor::vcs

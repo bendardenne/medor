@@ -6,6 +6,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time/posix_time/ptime.hpp>
 #include <iostream>
+#include <rang.hpp>
 #include <sdbus-c++/IProxy.h>
 #include <storage/VcsStore.h>
 
@@ -17,6 +18,7 @@
 using namespace medor;
 
 namespace greg = boost::gregorian;
+typedef rang::style style;
 
 dbus::CLI::CLI(storage::ActivityStore activityStore, storage::VcsStore vcsStore, sdbus::IConnection& dbusConnection)
     : _activityStore(activityStore), _vcsStore(vcsStore),
@@ -84,7 +86,7 @@ void dbus::CLI::report(pt::time_period period) {
     }
 
     for (const auto& forDay : byDay) {
-        std::cout << forDay.first.day_of_week().as_long_string() << std::endl;
+        std::cout << style::bold << forDay.first.day_of_week().as_long_string() << style::reset << std::endl;
         std::map<int, std::vector<model::Activity>> byProject;
 
         // Group by project, for this day
@@ -98,11 +100,14 @@ void dbus::CLI::report(pt::time_period period) {
             const std::string& spentOnProject =
                 util::time::formatDuration(util::time::aggregateTimes(activities.second), false);
 
-            std::cout << "\t" << currentProject.name << ": " << spentOnProject << std::endl;
+            std::cout << "\t" << style::underline << currentProject.name << style::reset << ": " << spentOnProject
+                      << std::endl;
 
             // And possibly VCS activity on this project, for this day
             reportRepoActivity(activities.second);
         }
+
+        std::cout << std::endl;
     }
 }
 

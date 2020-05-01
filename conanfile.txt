@@ -4,6 +4,7 @@ sdbus-cpp/0.8.1@bendardenne/stable
 sqlite3/3.31.1
 libgit2/0.28.3
 zlib/1.2.11@conan/stable
+rang/3.1.0@rang/stable
 
 [generators]
 cmake

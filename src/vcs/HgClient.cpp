@@ -4,13 +4,11 @@
 
 #include <boost/algorithm/string.hpp>
 #include <boost/date_time/period_formatter.hpp>
-#include <chrono>
-#include <csignal>
+#include <boost/process/child.hpp>
+#include <boost/process/search_path.hpp>
 #include <iomanip>
 #include <regex>
-#include <sys/socket.h>
 #include <sys/un.h>
-#include <unistd.h>
 
 #include "vcs/HgClient.h"
 #include "vcs/HgProtocol.h"
@@ -18,79 +16,33 @@
 namespace dt = boost::date_time;
 
 using namespace medor::vcs;
+
 HgClient::HgClient(const std::string& repoPath, const std::string& socketPath) {
-    std::string resolvedSocket;
-    if (socketPath.empty()) {
-        char tmpFileTemplate[] = "medorhg_XXXXXX";
-        resolvedSocket = std::string(mktemp(tmpFileTemplate));
-    } else {
-        resolvedSocket = socketPath;
-    }
-
-    pid_t childPid = fork();
-    if (childPid == -1) {
-        BOOST_LOG_SEV(_logger, Critical) << "Could not fork process. Errno: " << errno;
-    }
-
-    // Spawn hg serve in the child process
-    if (childPid == 0) {
-        // HG serve prints some stuff on stdout. Redirect to /dev/null.
-        freopen("/dev/null", "w", stdout);
-        freopen("/dev/null", "w", stderr);
-        execlp("hg",
-               "hg",
-               "serve",
-               "--config",
-               "ui.interactive=False",
-               "--cmdserver",
-               "unix",
-               "--address",
-               resolvedSocket.c_str(),
-               "-R",
-               repoPath.c_str(),
-               nullptr);
-        return;
-    }
-
-    _serverPid = childPid;
-    _sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
-    if (_sockfd == -1) {
-        BOOST_LOG_SEV(_logger, Error) << "Could not open socket. Errno: " << errno;
-        throw std::runtime_error("Could not open socket for hg serve");
-    }
-
-    sockaddr_un addr = {
-        .sun_family = AF_UNIX,
-    };
-    strncpy(addr.sun_path, resolvedSocket.c_str(), resolvedSocket.size());
-
-    int connection;
-    auto start = std::chrono::system_clock::now();
-    // Try to connect for at most 5 seconds.
-    while ((connection = connect(_sockfd, reinterpret_cast<const sockaddr*>(&addr), sizeof(addr))) != 0 &&
-           std::chrono::duration<double>(std::chrono::system_clock::now() - start).count() < 5) {
-    }
-
-    if (connection != 0) {
-        throw std::runtime_error("Timeout when trying to connect to hg serve socket");
-    }
+    _child = proc::child(proc::search_path("hg"),
+                         "serve",
+                         "--cmdserver",
+                         "pipe",
+                         "--config",
+                         "ui.interactive=False",
+                         "-R",
+                         repoPath,
+                         "--cwd",
+                         repoPath,
+                         proc::std_out > _out,
+                         proc::std_in < _in);
 
     // Read in welcome message.
-    ChannelRecord record = vcs::readRecord(_sockfd);
+    ChannelRecord record = vcs::readRecord(_out);
     // hg serve sends info about encoding, which we're not taking into account here.
 }
 
-HgClient::~HgClient() {
-    close(_sockfd);
-    kill(_serverPid, SIGTERM);
-}
+HgClient::~HgClient() { _child.terminate(); }
 
 std::vector<medor::vcs::LogEntry> HgClient::log(pt::time_period timePeriod) {
     std::string user = config()["ui.username"];
-
     std::stringstream command;
     command << "log;";
-    command << "-u;" << user << ";";
+    command << "-u;" + user + ";";
 
     if (!timePeriod.is_null()) {
         dt::period_formatter<char> formatter(dt::period_formatter<char>::AS_CLOSED_RANGE, " to ", "", "", "");
@@ -101,7 +53,7 @@ std::vector<medor::vcs::LogEntry> HgClient::log(pt::time_period timePeriod) {
 
     std::vector<LogEntry> result;
     std::regex field("(.+?):(.+)[\\r\\n]+");
-    for (auto& line : vcs::runCommand(_sockfd, command.str())) {
+    for (auto& line : vcs::runCommand(_out, _in, command.str())) {
         LogEntry current;
         auto fields = std::sregex_iterator(line.begin(), line.end(), field);
 
@@ -130,7 +82,7 @@ std::vector<medor::vcs::LogEntry> HgClient::log(pt::time_period timePeriod) {
 
 std::map<std::string, std::string> HgClient::config() {
     std::map<std::string, std::string> result;
-    std::vector<std::string> lines = vcs::runCommand(_sockfd, "config");
+    std::vector<std::string> lines = vcs::runCommand(_out, _in, "config");
 
     for (const auto& line : lines) {
         size_t index = line.find('=');
