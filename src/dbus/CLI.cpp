@@ -98,7 +98,7 @@ void dbus::CLI::report(pt::time_period period) {
             const std::string& spentOnProject =
                 util::time::formatDuration(util::time::aggregateTimes(activities.second), false);
 
-            std::cout << "\t\t" << currentProject.name << ": " << spentOnProject << std::endl;
+            std::cout << "\t" << currentProject.name << ": " << spentOnProject << std::endl;
 
             // And possibly VCS activity on this project, for this day
             reportRepoActivity(activities.second);
@@ -118,17 +118,24 @@ void dbus::CLI::reportRepoActivity(std::vector<model::Activity> activities) {
     ss.imbue(std::locale(std::locale::classic(), new pt::time_facet("%H:%M")));
     if (!repos.empty()) {
         for (const auto& repo : repos) {
-            std::unique_ptr<vcs::IVcsClient> vcs = vcs::IVcsClient::create(repo);
-            if (!vcs) {
-                BOOST_LOG_SEV(_logger, Error) << "Could not open repo (" << currentProject.name << "): " << repo;
-                continue;
-            }
-            for (const auto& activity : activities) {
-                for (const auto& entry : vcs->log(activity.getPeriod())) {
-                    ss.str("");
-                    ss << entry.date;
-                    std::cout << "\t\t\t(" << ss.str() << ") " << entry.summary << std::endl;
+            try {
+                std::unique_ptr<vcs::IVcsClient> vcs = vcs::IVcsClient::create(repo);
+                if (!vcs) {
+                    BOOST_LOG_SEV(_logger, Error)
+                        << "Could not open repo (" << currentProject.name << ") " << repo << ": "
+                        << " not a know vcs root";
+                    continue;
                 }
+                for (const auto& activity : activities) {
+                    for (const auto& entry : vcs->log(activity.getPeriod())) {
+                        ss.str("");
+                        ss << entry.date;
+                        std::cout << "\t\t(" << ss.str() << ") " << entry.summary << std::endl;
+                    }
+                }
+            } catch (std::exception& e) {
+                BOOST_LOG_SEV(_logger, Error)
+                    << "Could not open repo (" << currentProject.name << ") " << repo << ": " << e.what();
             }
         }
     }

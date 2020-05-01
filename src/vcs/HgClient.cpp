@@ -4,6 +4,7 @@
 
 #include <boost/algorithm/string.hpp>
 #include <boost/date_time/period_formatter.hpp>
+#include <chrono>
 #include <csignal>
 #include <iomanip>
 #include <regex>
@@ -51,12 +52,6 @@ HgClient::HgClient(const std::string& repoPath, const std::string& socketPath) {
         return;
     }
 
-    //    int notifyFd = inotify_init();
-    //    inotify_add_watch(notifyFd, resolvedSocket.c_str(), IN_CREATE)
-    //
-    //    // FIXME inotify wait for sock file
-    //    sleep(1);
-
     _serverPid = childPid;
     _sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
     if (_sockfd == -1) {
@@ -69,9 +64,15 @@ HgClient::HgClient(const std::string& repoPath, const std::string& socketPath) {
     };
     strncpy(addr.sun_path, resolvedSocket.c_str(), resolvedSocket.size());
 
-    // TODO improve this
     int connection;
-    while ((connection = connect(_sockfd, reinterpret_cast<const sockaddr*>(&addr), sizeof(addr))) != 0) {
+    auto start = std::chrono::system_clock::now();
+    // Try to connect for at most 5 seconds.
+    while ((connection = connect(_sockfd, reinterpret_cast<const sockaddr*>(&addr), sizeof(addr))) != 0 &&
+           std::chrono::duration<double>(std::chrono::system_clock::now() - start).count() < 5) {
+    }
+
+    if (connection != 0) {
+        throw std::runtime_error("Timeout when trying to connect to hg serve socket");
     }
 
     // Read in welcome message.
@@ -122,6 +123,7 @@ std::vector<medor::vcs::LogEntry> HgClient::log(pt::time_period timePeriod) {
 
         result.emplace_back(current);
     }
+
     std::reverse(result.begin(), result.end());
     return result;
 }

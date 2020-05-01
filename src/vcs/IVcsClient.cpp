@@ -13,16 +13,11 @@ using namespace medor::vcs;
 IVcsClient::~IVcsClient() {}
 
 std::unique_ptr<IVcsClient> IVcsClient::create(const std::string& repo) {
-    try {
-        if (boost::filesystem::exists(boost::filesystem::path(repo + "/.git"))) {
-            return std::make_unique<GitClient>(repo);
-        }
-        if (boost::filesystem::exists(boost::filesystem::path(repo + "/.hg"))) {
-            return std::make_unique<HgClient>(repo);
-        }
-    } catch (std::runtime_error& e) {
-        // Catch but don't fail, just don't return any client.
-        return nullptr;
+    if (boost::filesystem::exists(boost::filesystem::path(repo + "/.git"))) {
+        return std::make_unique<GitClient>(repo);
+    }
+    if (boost::filesystem::exists(boost::filesystem::path(repo + "/.hg"))) {
+        return std::make_unique<HgClient>(repo);
     }
 
     return nullptr;
