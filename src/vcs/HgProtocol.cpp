@@ -14,11 +14,11 @@ using namespace medor;
 
 vcs::ChannelRecord vcs::readRecord(proc::ipstream& hgOut) {
     auto channel = static_cast<Channel>(hgOut.get());
+    uint32_t length;
+    hgOut.read(reinterpret_cast<char*>(&length), 4);
 
     // Server uses big endian by specification.
-    // TODO We can probably use ntohl or something
-    uint32_t length =
-        (uint8_t)hgOut.get() << 24u | (uint8_t)hgOut.get() << 16u | (uint8_t)hgOut.get() << 8u | (uint8_t)hgOut.get();
+    length = ntohl(length);
 
     char buffer[length];
     hgOut.read(buffer, length);
@@ -34,7 +34,7 @@ std::vector<std::string> vcs::runCommand(proc::ipstream& hgOut, proc::opstream& 
     std::replace(nullTerminated.begin(), nullTerminated.end(), ';', '\0');
 
     hgIn << rawCommand;
-    hgIn.write((const char*)&bigEndianSize, 4);
+    hgIn.write(reinterpret_cast<char*>(&bigEndianSize), 4);
     hgIn.write(nullTerminated.c_str(), commandLength);
     hgIn.flush();
 
