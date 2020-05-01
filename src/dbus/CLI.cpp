@@ -54,9 +54,6 @@ void dbus::CLI::status(std::string format) {
 }
 
 void dbus::CLI::projects(unsigned int limit) {
-    // TODO this does not necessarily include the current project, or it may not
-    // be the first of the list.
-    //  Maybe not a problem?
     std::vector<std::string> projects = _activityStore.getRecentProjects(limit);
 
     for (const auto& project : projects) {

@@ -7,6 +7,7 @@
 #include <csignal>
 #include <iomanip>
 #include <regex>
+#include <sys/inotify.h>
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <unistd.h>
@@ -76,7 +77,7 @@ HgClient::HgClient(const std::string& repoPath, const std::string& socketPath) {
 
     // Read in welcome message.
     ChannelRecord record = vcs::readRecord(_sockfd);
-    // TODO use encoding info to make sure we decode everything correctly.
+    // hg serve sends info about encoding, which we're not taking into account here.
 }
 
 HgClient::~HgClient() {
@@ -112,10 +113,11 @@ std::vector<medor::vcs::LogEntry> HgClient::log(pt::time_period timePeriod) {
             if (key == "summary") {
                 current.summary = value;
             } else if (key == "date") {
-                //            std::tm t = {};
-                //            std::istringstream ss(value);
-                //            ss >> std::get_time(&t, "%a %b %d %H:%M:%S ")
-                //            current.date = std::get_time(&tm, "%b %d %Y %H:%M:%S");
+                std::stringstream ss(value);
+                ss.imbue(std::locale(std::locale::classic(), new pt::time_input_facet("%a %b %d %H:%M:%S %Y %q")));
+                pt::ptime time;
+                ss >> time;
+                current.date = time;
             }
         }
 

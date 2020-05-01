@@ -23,7 +23,7 @@ vcs::ChannelRecord vcs::readRecord(int fd) {
         return {.channel = channel, .message = std::string(buffer + 5, length)};
     }
 
-    throw ""; // TODO
+    throw std::runtime_error("Failed to read response from hg command server");
 }
 
 std::vector<std::string> vcs::runCommand(int fd, const std::string& command) {
@@ -47,8 +47,7 @@ std::vector<std::string> vcs::runCommand(int fd, const std::string& command) {
             result.emplace_back(response.message);
             break;
         case Channel::Error:
-            std::cerr << response.message << std::endl;
-            // FIXME What to do here? Throw exception ?
+            throw std::runtime_error(response.message); // Not sure if that's the best thing to do here.
         case Channel::Debug:
         case Channel::Input:
         case Channel::Line:

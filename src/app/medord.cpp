@@ -52,8 +52,7 @@ int main(int argc, char** argv) {
     options.add_options()
     ("help,h", "Show this help.")
     ("database,d",po::value<std::string>()->default_value(homedir + "/.config/medor/activities.db"), "Path to the database file.")
-    ("quiet,q", "Turn off notifications.")
-    ("daemon,D", "Fork to the background.");
+    ("quiet,q", "Turn off notifications.");
     // clang-format on
 
     po::variables_map vm;
@@ -69,10 +68,6 @@ int main(int argc, char** argv) {
     if (vm.count("help")) {
         std::cout << options << "\n";
         return 0;
-    }
-
-    if (vm.count("daemon")) {
-        // TODO
     }
 
     std::unique_ptr<sdbus::IConnection> dbusConnection = sdbus::createSessionBusConnection(D_SERVICE_NAME);
