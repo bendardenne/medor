@@ -5,7 +5,6 @@
 #include <algorithm>
 #include <iostream>
 #include <netinet/in.h>
-#include <unistd.h>
 #include <vector>
 
 #include "vcs/HgProtocol.h"
@@ -31,6 +30,7 @@ std::vector<std::string> vcs::runCommand(proc::ipstream& hgOut, proc::opstream& 
     uint32_t commandLength = nullTerminated.size();
     uint32_t bigEndianSize = htonl(commandLength);
 
+    // This isn't super robust, the best would probably be to pass a vector of arguments and reassemble here
     std::replace(nullTerminated.begin(), nullTerminated.end(), ';', '\0');
 
     hgIn << rawCommand;

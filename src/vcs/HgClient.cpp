@@ -40,6 +40,7 @@ HgClient::~HgClient() { _child.terminate(); }
 
 std::vector<medor::vcs::LogEntry> HgClient::log(pt::time_period timePeriod) {
     std::string user = config()["ui.username"];
+
     std::stringstream command;
     command << "log;";
     command << "-u;" + user + ";";
