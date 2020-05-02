@@ -7,9 +7,9 @@
 #include <iostream>
 #include <utility>
 
-#include "dbus/Constants.h"
-#include "dbus/Tracker.h"
-#include "util/time.h"
+#include "dbus/Constants.hpp"
+#include "dbus/Tracker.hpp"
+#include "util/time.hpp"
 
 using namespace medor;
 

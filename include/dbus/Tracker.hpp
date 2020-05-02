@@ -8,11 +8,11 @@
 #include <optional>
 #include <sdbus-c++/sdbus-c++.h>
 
-#include "dbus/Notifier.h"
-#include "model/Activity.h"
-#include "storage/ActivityStore.h"
-#include "storage/ProjectStore.h"
-#include "util/logging.h"
+#include "dbus/Notifier.hpp"
+#include "model/Activity.hpp"
+#include "storage/ActivityStore.hpp"
+#include "storage/ProjectStore.hpp"
+#include "util/logging.hpp"
 
 namespace logsrc = boost::log::sources;
 namespace medor::dbus {

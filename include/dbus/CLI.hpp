@@ -6,11 +6,11 @@
 #include <boost/date_time/posix_time/time_period.hpp>
 #include <boost/log/sources/severity_logger.hpp>
 #include <boost/log/trivial.hpp>
-#include <storage/VcsStore.h>
 
-#include "model/Activity.h"
-#include "storage/ActivityStore.h"
-#include "util/logging.h"
+#include "model/Activity.hpp"
+#include "storage/ActivityStore.hpp"
+#include "storage/VcsStore.hpp"
+#include "util/logging.hpp"
 
 namespace medor::dbus {
 namespace pt = boost::posix_time;

@@ -7,8 +7,8 @@
 #include <iostream>
 #include <string>
 
-#include "util/database.h"
-#include "util/logging.h"
+#include "util/database.hpp"
+#include "util/logging.hpp"
 
 using namespace medor;
 

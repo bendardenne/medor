@@ -2,9 +2,9 @@
 // Created by bdardenn on 4/22/20.
 //
 
-#include "dbus/VcsHinter.h"
+#include "dbus/VcsHinter.hpp"
 
-#include "dbus/Constants.h"
+#include "dbus/Constants.hpp"
 #include <utility>
 
 using namespace medor;

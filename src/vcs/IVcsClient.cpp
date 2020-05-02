@@ -4,9 +4,9 @@
 
 #include <boost/filesystem/operations.hpp>
 
-#include "vcs/GitClient.h"
-#include "vcs/HgClient.h"
-#include "vcs/IVcsClient.h"
+#include "vcs/GitClient.hpp"
+#include "vcs/HgClient.hpp"
+#include "vcs/IVcsClient.hpp"
 
 using namespace medor::vcs;
 

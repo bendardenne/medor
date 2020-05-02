@@ -2,8 +2,8 @@
 // Created by bdardenn on 4/19/20.
 //
 
-#include "util/time.h"
-#include "model/Activity.h"
+#include "util/time.hpp"
+#include "model/Activity.hpp"
 
 using namespace medor::util;
 namespace pt = boost::posix_time;

@@ -8,7 +8,7 @@
 #include <boost/log/sources/severity_logger.hpp>
 #include <boost/log/trivial.hpp>
 
-#include "util/logging.h"
+#include "util/logging.hpp"
 
 namespace pt = boost::posix_time;
 namespace logsrc = boost::log::sources;

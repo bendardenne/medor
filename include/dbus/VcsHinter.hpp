@@ -10,9 +10,9 @@
 #include <sqlite3.h>
 #include <string>
 
-#include "dbus/Tracker.h"
-#include "storage/VcsStore.h"
-#include "util/logging.h"
+#include "dbus/Tracker.hpp"
+#include "storage/VcsStore.hpp"
+#include "util/logging.hpp"
 
 using namespace medor;
 namespace logsrc = boost::log::sources;

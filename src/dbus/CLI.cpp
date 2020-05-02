@@ -8,12 +8,12 @@
 #include <iostream>
 #include <rang.hpp>
 #include <sdbus-c++/IProxy.h>
-#include <storage/VcsStore.h>
 
-#include "dbus/CLI.h"
-#include "dbus/Constants.h"
-#include "util/time.h"
-#include "vcs/HgClient.h"
+#include "dbus/CLI.hpp"
+#include "dbus/Constants.hpp"
+#include "storage/VcsStore.hpp"
+#include "util/time.hpp"
+#include "vcs/HgClient.hpp"
 
 using namespace medor;
 

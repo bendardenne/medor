@@ -5,8 +5,8 @@
 #include <utility>
 #include <sdbus-c++/IProxy.h>
 
-#include "dbus/Constants.h"
-#include "dbus/Notifier.h"
+#include "dbus/Constants.hpp"
+#include "dbus/Notifier.hpp"
 
 using namespace medor::dbus;
 

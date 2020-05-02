@@ -5,7 +5,7 @@
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 
-#include "model/Activity.h"
+#include "model/Activity.hpp"
 
 using namespace medor;
 namespace medor::util::time {

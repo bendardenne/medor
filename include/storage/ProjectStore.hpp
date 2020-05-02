@@ -10,8 +10,8 @@
 #include <sqlite3.h>
 #include <string>
 
-#include "model/Activity.h"
-#include "util/logging.h"
+#include "model/Activity.hpp"
+#include "util/logging.hpp"
 
 namespace logsrc = boost::log::sources;
 namespace medor::storage {

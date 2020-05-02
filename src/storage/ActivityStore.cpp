@@ -6,9 +6,9 @@
 
 #include <boost/format.hpp>
 
-#include "model/Activity.h"
-#include "storage/ActivityStore.h"
-#include "util/database.h"
+#include "model/Activity.hpp"
+#include "storage/ActivityStore.hpp"
+#include "util/database.hpp"
 
 using namespace medor;
 namespace pt = boost::posix_time;

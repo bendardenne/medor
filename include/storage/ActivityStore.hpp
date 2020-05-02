@@ -7,7 +7,7 @@
 #include <sqlite3.h>
 #include <string>
 
-#include "model/Activity.h"
+#include "model/Activity.hpp"
 
 namespace medor::storage {
 /**

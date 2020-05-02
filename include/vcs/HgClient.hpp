@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "vcs/IVcsClient.h"
+#include "vcs/IVcsClient.hpp"
 
 namespace proc = boost::process;
 

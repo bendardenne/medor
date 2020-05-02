@@ -4,10 +4,10 @@
 #include <iostream>
 #include <pwd.h>
 #include <sdbus-c++/sdbus-c++.h>
-#include <util/database.h>
 
-#include "dbus/CLI.h"
-#include "util/time.h"
+#include "dbus/CLI.hpp"
+#include "util/database.hpp"
+#include "util/time.hpp"
 
 using namespace medor;
 namespace po = boost::program_options;

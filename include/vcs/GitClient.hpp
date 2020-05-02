@@ -6,7 +6,7 @@
 
 #include <git2.h>
 
-#include "IVcsClient.h"
+#include "IVcsClient.hpp"
 
 namespace medor::vcs {
 

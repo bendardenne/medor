@@ -13,10 +13,10 @@
 
 #include <sdbus-c++/sdbus-c++.h>
 
-#include "dbus/Constants.h"
-#include "dbus/Tracker.h"
-#include "dbus/VcsHinter.h"
-#include "util/database.h"
+#include "dbus/Constants.hpp"
+#include "dbus/Tracker.hpp"
+#include "dbus/VcsHinter.hpp"
+#include "util/database.hpp"
 
 using namespace medor;
 namespace po = boost::program_options;

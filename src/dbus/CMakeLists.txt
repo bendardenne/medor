@@ -1,4 +1,4 @@
-file(GLOB HEADER_LIST CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/include/dbus/*.h")
+file(GLOB HEADER_LIST CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/include/dbus/*.hpp")
 
 add_library(dbus STATIC CLI.cpp Tracker.cpp VcsHinter.cpp Notifier.cpp ${HEADER_LIST})
 target_include_directories(dbus PUBLIC ${CMAKE_SOURCE_DIR}/include)

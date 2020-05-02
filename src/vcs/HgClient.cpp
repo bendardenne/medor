@@ -10,8 +10,8 @@
 #include <regex>
 #include <sys/un.h>
 
-#include "vcs/HgClient.h"
-#include "vcs/HgProtocol.h"
+#include "vcs/HgClient.hpp"
+#include "vcs/HgProtocol.hpp"
 
 namespace dt = boost::date_time;
 

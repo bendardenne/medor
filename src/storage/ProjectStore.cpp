@@ -2,8 +2,8 @@
 // Created by bdardenn on 4/25/20.
 //
 
-#include "storage/ProjectStore.h"
-#include "util/database.h"
+#include "storage/ProjectStore.hpp"
+#include "util/database.hpp"
 
 using namespace medor::storage;
 using namespace medor;

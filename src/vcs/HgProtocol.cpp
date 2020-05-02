@@ -7,7 +7,7 @@
 #include <netinet/in.h>
 #include <vector>
 
-#include "vcs/HgProtocol.h"
+#include "vcs/HgProtocol.hpp"
 
 using namespace medor;
 

@@ -3,11 +3,11 @@
 //
 
 #include <boost/optional.hpp>
-#include <model/Activity.h>
 #include <string>
 
-#include "storage/VcsStore.h"
-#include "util/database.h"
+#include "model/Activity.hpp"
+#include "storage/VcsStore.hpp"
+#include "util/database.hpp"
 
 using namespace medor;
 

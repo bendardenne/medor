@@ -2,7 +2,7 @@
 // Created by bdardenn on 4/30/20.
 //
 
-#include "vcs/GitClient.h"
+#include "vcs/GitClient.hpp"
 
 using namespace medor::vcs;
 GitClient::GitClient(const std::string& repoPath) {
