@@ -63,9 +63,9 @@ std::vector<medor::model::Activity> storage::ActivityStore::getActivities(const 
 
     sqlite3_stmt* projectInPeriod;
     sqlite3_prepare_v2(_db,
-                       "select start,end,name,project_id from activities inner join "
-                       "projects on project_id = projects.id"
-                       " where projects.id = ? and start between ? and ? ",
+                       R"sql(select start,end,name,project_id from activities inner join
+                       projects on project_id = projects.id
+                       where projects.id = ? and start between ? and ? )sql",
                        -1,
                        &projectInPeriod,
                        nullptr);
@@ -95,9 +95,9 @@ std::vector<medor::model::Activity> storage::ActivityStore::getActivities(pt::ti
 
     sqlite3_stmt* activitiesInPeriod;
     sqlite3_prepare_v2(_db,
-                       "select start,end,name,project_id from activities inner join "
-                       "projects on project_id = projects.id"
-                       " where start between ? and ? ",
+                       R"sql(select start,end,name,project_id from activities inner join
+                       projects on project_id = projects.id
+                       where start between ? and ? )sql",
                        -1,
                        &activitiesInPeriod,
                        0);
