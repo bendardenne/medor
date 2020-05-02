@@ -37,16 +37,16 @@ std::vector<std::string> storage::ActivityStore::getRecentProjects(unsigned int 
 
     sqlite3_stmt* getProjects;
     sqlite3_prepare_v2(_db,
-                       "select name from activities join projects on "
-                       "activities.project_id = projects.id"
-                       " group by projects.id order by start desc limit ?",
+                       R"sql(select max(activities.start), projects.name from activities join projects on
+                       activities.project_id = projects.id
+                       group by projects.id order by start desc limit ? )sql",
                        -1,
                        &getProjects,
                        0);
 
     sqlite3_bind_int(getProjects, 1, limit);
     while (sqlite3_step(getProjects) == SQLITE_ROW) {
-        const char* name = reinterpret_cast<const char*>(sqlite3_column_text(getProjects, 0));
+        const char* name = reinterpret_cast<const char*>(sqlite3_column_text(getProjects, 1));
         projects.emplace_back(name);
     }
 
@@ -98,7 +98,9 @@ std::vector<medor::model::Activity> storage::ActivityStore::getActivities(pt::ti
                        "select start,end,name,project_id from activities inner join "
                        "projects on project_id = projects.id"
                        " where start between ? and ? ",
-                       -1, &activitiesInPeriod, 0);
+                       -1,
+                       &activitiesInPeriod,
+                       0);
     sqlite3_bind_text(activitiesInPeriod, 1, periodStart.c_str(), periodStart.length(), SQLITE_STATIC);
     sqlite3_bind_text(activitiesInPeriod, 2, periodEnd.c_str(), periodEnd.length(), SQLITE_STATIC);
 
