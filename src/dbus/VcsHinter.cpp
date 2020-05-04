@@ -32,14 +32,26 @@ dbus::VcsHinter::VcsHinter(sdbus::IConnection& dbusConnection,
 
 void dbus::VcsHinter::addRepo(const std::string& project, const std::string& repo) {
     int projectId = _projectStore->getIdForProject(project);
-    _vcsStore->addRepo(repo, {.id = projectId, .name = project});
-    BOOST_LOG_SEV(_logger, Info) << "Added repo for project " << project << ": " << repo;
+    bool added = _vcsStore->addRepo(repo, {.id = projectId, .name = project});
+
+    if (!added) {
+        throw sdbus::Error(std::string(D_VCSHINTER_INTERFACE) + ".Error", "Could not add repo. Already registered?");
+        BOOST_LOG_SEV(_logger, Warning) << "Could not add repo for project " << project << ": " << repo;
+    } else {
+        BOOST_LOG_SEV(_logger, Info) << "Added repo for project " << project << ": " << repo;
+    }
 }
 
 void dbus::VcsHinter::removeRepo(const std::string& project, const std::string& repo) {
     int projectId = _projectStore->getIdForProject(project);
-    _vcsStore->removeRepo(repo, {.id = projectId, .name = project});
-    BOOST_LOG_SEV(_logger, Info) << "Removing repo for project " << project << ": " << repo;
+    bool removed = _vcsStore->removeRepo(repo, {.id = projectId, .name = project});
+
+    if (!removed) {
+        throw sdbus::Error(std::string(D_VCSHINTER_INTERFACE) + ".Error", "Could not remove repo");
+        BOOST_LOG_SEV(_logger, Warning) << "Could not remove repo for project " << project << ": " << repo;
+    } else {
+        BOOST_LOG_SEV(_logger, Info) << "Removing repo for project " << project << ": " << repo;
+    }
 }
 
 void dbus::VcsHinter::activityOnRepo(const std::string& repo) {

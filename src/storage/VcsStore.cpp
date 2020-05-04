@@ -13,7 +13,7 @@ using namespace medor;
 
 storage::VcsStore::VcsStore(sqlite3* dbConnection) : _db(dbConnection) { util::database::createTables(dbConnection); }
 
-void storage::VcsStore::addRepo(const std::string& repo, const model::Project& project) {
+bool storage::VcsStore::addRepo(const std::string& repo, const model::Project& project) {
     sqlite3_stmt* newRepo;
 
     sqlite3_prepare_v2(_db, "insert into repos (path, project_id) values (?,?)", -1, &newRepo, 0);
@@ -21,9 +21,11 @@ void storage::VcsStore::addRepo(const std::string& repo, const model::Project& p
     sqlite3_bind_int(newRepo, 2, project.id);
     sqlite3_step(newRepo);
     sqlite3_finalize(newRepo);
+
+    return sqlite3_changes(_db) != 0;
 }
 
-void storage::VcsStore::removeRepo(const std::string& repo, const model::Project& project) {
+bool storage::VcsStore::removeRepo(const std::string& repo, const model::Project& project) {
     sqlite3_stmt* removeRepo;
 
     sqlite3_prepare_v2(_db, "delete from repos where path is ? and project_id is ? ", -1, &removeRepo, 0);
@@ -31,6 +33,8 @@ void storage::VcsStore::removeRepo(const std::string& repo, const model::Project
     sqlite3_bind_int(removeRepo, 2, project.id);
     sqlite3_step(removeRepo);
     sqlite3_finalize(removeRepo);
+
+    return sqlite3_changes(_db) != 0;
 }
 
 std::optional<int> storage::VcsStore::getReposFor(const std::string& repo) {

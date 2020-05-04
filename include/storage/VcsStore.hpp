@@ -20,14 +20,16 @@ class VcsStore {
     /**
      * @param repo A path to a repository.
      * @param project  A project to link to the repository.
+     * @return True if the repo could be added, false otherwise.
      */
-    void addRepo(const std::string& repo, const model::Project& project);
+    bool addRepo(const std::string& repo, const model::Project& project);
 
     /**
      * @param repo A path to a repository.
      * @param project  The project from which to remove the repo.
+     * @return True if the repo could be removed, false otherwise.
      */
-    void removeRepo(const std::string& repo, const model::Project& project);
+    bool removeRepo(const std::string& repo, const model::Project& project);
 
     /**
      * @param repo A repo path.
