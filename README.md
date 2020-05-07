@@ -58,7 +58,7 @@ Then in the hooks themselves (e.g. `~/.git-templates/hooks/pre-commit`), use
 * CLI to show linked repo of projects
 * Inactivity detection: pause on sleep / suspend, possibly based on input inactivity.
 * Warnings when stopped on a weekday during work hours?
-* Add a optional comment field to activities?  
+* Add an optional comment field to activities?  
 * Interface to edit / delete activities / add past activities  (GUI? let's go nuts)
 * Add a way to get help about individual commands (a "help" command?).
 

@@ -1,6 +1,7 @@
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/program_options.hpp>
+#include <boost/system/error_code.hpp>
 #include <iostream>
 #include <pwd.h>
 #include <sdbus-c++/sdbus-c++.h>
@@ -215,10 +216,16 @@ void repo(dbus::CLI& cli, const std::vector<std::string>& arguments) {
     }
 
     try {
-        path = fs::canonical(fs::path(vm["path"].as<std::string>()));
+        path = fs::path(vm["path"].as<std::string>());
     } catch (fs::filesystem_error& e) {
-        std::cerr << "Not a valid repo path: " << vm["path"].as<std::string>() << std::endl;
-        return;
+        // When removing, the repo might not exist. That's okay.
+        if (e.code() == boost::system::errc::no_such_file_or_directory && vm.count("remove")) {
+            // Do nothing
+        } else {
+            std::cerr << "Not a valid repo path: " << vm["path"].as<std::string>() << std::endl;
+            std::cerr << e.what() << std::endl;
+            return;
+        }
     }
 
     if (vm.count("path") && vm.count("project")) {
