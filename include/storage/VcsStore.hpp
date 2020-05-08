@@ -7,6 +7,7 @@
 #include <string>
 
 #include "model/Activity.hpp"
+#include "storage/Database.hpp"
 
 namespace medor::storage {
 
@@ -15,7 +16,7 @@ namespace medor::storage {
  */
 class VcsStore {
   public:
-    explicit VcsStore(sqlite3* dbConnection);
+    explicit VcsStore(Database db);
 
     /**
      * @param repo A path to a repository.
@@ -44,7 +45,7 @@ class VcsStore {
     std::vector<std::string> getReposFor(int projectId);
 
   private:
-    sqlite3* _db;
+    Database _db;
 };
 
 } // namespace medor::storage

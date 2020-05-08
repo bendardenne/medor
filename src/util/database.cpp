@@ -2,18 +2,13 @@
 // Created by bdardenn on 4/22/20.
 //
 
-#include <boost/log/sources/severity_logger.hpp>
-#include <boost/log/trivial.hpp>
-#include <iostream>
 #include <string>
 
 #include "util/database.hpp"
-#include "util/logging.hpp"
 
 using namespace medor;
 
-void util::database::createTables(sqlite3* dbConnection) {
-    char* error = 0;
+void util::database::createTables(SQLite::Database& db) {
     std::string sql = R"sql(
     create table if not exists activities (
         id integer primary key autoincrement,
@@ -23,8 +18,7 @@ void util::database::createTables(sqlite3* dbConnection) {
         project_id integer not null
     );)sql";
 
-    int ret = sqlite3_exec(dbConnection, sql.c_str(), nullptr, 0, &error);
-    util::database::checkError(ret);
+    db.exec(sql);
 
     sql = R"sql(
         create table if not exists projects (
@@ -32,8 +26,7 @@ void util::database::createTables(sqlite3* dbConnection) {
                 name text not null
           );)sql";
 
-    ret = sqlite3_exec(dbConnection, sql.c_str(), nullptr, 0, &error);
-    util::database::checkError(ret);
+    db.exec(sql);
 
     sql = R"sql(
         create table if not exists repos (
@@ -42,17 +35,5 @@ void util::database::createTables(sqlite3* dbConnection) {
                 project_id integer
           );)sql";
 
-    ret = sqlite3_exec(dbConnection, sql.c_str(), nullptr, 0, &error);
-    util::database::checkError(ret);
-}
-
-void inline util::database::checkError(int errorCode) {
-    if (errorCode == SQLITE_OK) {
-        return;
-    }
-
-    std::string errorMessage = sqlite3_errstr(errorCode);
-
-    boost::log::sources::severity_logger<Severity> logger;
-    BOOST_LOG_SEV(logger, Error) << errorMessage;
+    db.exec(sql);
 }

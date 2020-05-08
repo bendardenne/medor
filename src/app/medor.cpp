@@ -98,14 +98,12 @@ int main(int argc, char** argv) {
     // Remove "command" from leftover unparsed arguments.
     unrecognized.erase(std::find(unrecognized.begin(), unrecognized.end(), cmd));
 
-    sqlite3* dbConnection;
     try {
         // Setup all the stuff we need.
         std::string dbFile = vm["database"].as<std::string>();
-        sqlite3_open_v2(dbFile.c_str(), &dbConnection, SQLITE_OPEN_READONLY, nullptr);
-
-        storage::ActivityStore activityStore(dbConnection);
-        storage::VcsStore vcsStore(dbConnection);
+        storage::Database db(dbFile, SQLite::OPEN_READONLY);
+        storage::ActivityStore activityStore(db);
+        storage::VcsStore vcsStore(db);
 
         std::unique_ptr<sdbus::IConnection> dbusConnection = sdbus::createSessionBusConnection();
         dbus::CLI cli(activityStore, vcsStore, *dbusConnection);
@@ -117,7 +115,6 @@ int main(int argc, char** argv) {
         return EXIT_FAILURE;
     }
 
-    util::database::checkError(sqlite3_close(dbConnection));
     return EXIT_SUCCESS;
 }
 

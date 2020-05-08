@@ -3,11 +3,11 @@
 //
 #pragma once
 
-#include <sqlite3.h>
+#include <SQLiteCpp/Database.h>
 
 namespace medor::util::database {
 
-void createTables(sqlite3* dbConnection);
+void createTables(SQLite::Database& dbConnection);
 
 void checkError(int ret);
 

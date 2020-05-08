@@ -8,6 +8,7 @@
 #include <string>
 
 #include "model/Activity.hpp"
+#include "storage/Database.hpp"
 
 namespace medor::storage {
 /**
@@ -15,7 +16,7 @@ namespace medor::storage {
  */
 class ActivityStore {
   public:
-    explicit ActivityStore(sqlite3* dbConnection);
+    explicit ActivityStore(Database database);
 
     /**
      * @param activity A new activity to be registered.
@@ -44,6 +45,6 @@ class ActivityStore {
 
 
   private:
-    sqlite3* _db;
+    Database _db;
 };
 } // namespace medor::storage

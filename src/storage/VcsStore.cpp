@@ -11,56 +11,47 @@
 
 using namespace medor;
 
-storage::VcsStore::VcsStore(sqlite3* dbConnection) : _db(dbConnection) { util::database::createTables(dbConnection); }
+storage::VcsStore::VcsStore(Database db) : _db(db) {}
 
 bool storage::VcsStore::addRepo(const std::string& repo, const model::Project& project) {
-    sqlite3_stmt* newRepo;
-
-    sqlite3_prepare_v2(_db, "insert into repos (path, project_id) values (?,?)", -1, &newRepo, 0);
-    sqlite3_bind_text(newRepo, 1, repo.c_str(), repo.length(), SQLITE_STATIC);
-    sqlite3_bind_int(newRepo, 2, project.id);
-    sqlite3_step(newRepo);
-    sqlite3_finalize(newRepo);
-
-    return sqlite3_changes(_db) != 0;
+    SQLite::Database handle = _db.handle();
+    SQLite::Statement query(handle, "insert into repos (path, project_id) values (?,?)");
+    query.bind(1, repo.c_str());
+    query.bind(2, project.id);
+    query.exec();
+    return handle.getTotalChanges() != 0;
 }
 
 bool storage::VcsStore::removeRepo(const std::string& repo, const model::Project& project) {
-    sqlite3_stmt* removeRepo;
-
-    sqlite3_prepare_v2(_db, "delete from repos where path is ? and project_id is ? ", -1, &removeRepo, 0);
-    sqlite3_bind_text(removeRepo, 1, repo.c_str(), repo.length(), SQLITE_STATIC);
-    sqlite3_bind_int(removeRepo, 2, project.id);
-    sqlite3_step(removeRepo);
-    sqlite3_finalize(removeRepo);
-
-    return sqlite3_changes(_db) != 0;
+    SQLite::Database handle = _db.handle();
+    SQLite::Statement query(handle, "delete from repos where path is ? and project_id is ? ");
+    query.bind(1, repo.c_str());
+    query.bind(2, project.id);
+    query.exec();
+    return handle.getTotalChanges() != 0;
 }
 
 std::optional<int> storage::VcsStore::getReposFor(const std::string& repo) {
-    sqlite3_stmt* getProjectFor;
-    sqlite3_prepare_v2(_db, "select id, path, project_id from repos where path like ?", -1, &getProjectFor, 0);
-    sqlite3_bind_text(getProjectFor, 1, repo.c_str(), repo.length(), SQLITE_STATIC);
+    SQLite::Database handle = _db.handle();
+    SQLite::Statement query(handle, "select id, path, project_id from repos where path like ?");
+    query.bind(1, repo);
 
     std::optional<int> ret;
-    if (sqlite3_step(getProjectFor) == SQLITE_ROW) {
-        ret.emplace(sqlite3_column_int(getProjectFor, 2));
+    if (query.executeStep()) {
+        ret.emplace(query.getColumn(2));
     }
-    sqlite3_finalize(getProjectFor);
     return ret;
 }
 
 std::vector<std::string> storage::VcsStore::getReposFor(int projectId) {
-    sqlite3_stmt* getReposFor;
-    sqlite3_prepare_v2(_db, "select path from repos where project_id is ?", -1, &getReposFor, 0);
-    sqlite3_bind_int(getReposFor, 1, projectId);
+    SQLite::Database handle = _db.handle();
+    SQLite::Statement query(handle, "select path from repos where project_id is ?");
+    query.bind(1, projectId);
 
     std::vector<std::string> result;
-    while (sqlite3_step(getReposFor) == SQLITE_ROW) {
-        std::string path = std::string(reinterpret_cast<const char*>(sqlite3_column_text(getReposFor, 0)));
-        result.emplace_back(path);
+    while (query.executeStep()) {
+        result.emplace_back(query.getColumn(0));
     }
 
-    sqlite3_finalize(getReposFor);
     return result;
 }

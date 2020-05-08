@@ -11,6 +11,7 @@
 #include <string>
 
 #include "model/Activity.hpp"
+#include "storage/Database.hpp"
 #include "util/logging.hpp"
 
 namespace logsrc = boost::log::sources;
@@ -21,7 +22,7 @@ namespace medor::storage {
  */
 class ProjectStore {
   public:
-    explicit ProjectStore(sqlite3* dbConnection);
+    explicit ProjectStore(Database db);
 
     /**
      * @param project A project name
@@ -37,7 +38,7 @@ class ProjectStore {
 
   private:
     logsrc::severity_logger<Severity> _logger;
-    sqlite3* _db;
+    Database _db;
 };
 
 } // namespace medor::storage

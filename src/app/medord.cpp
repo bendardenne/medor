@@ -79,12 +79,10 @@ int main(int argc, char** argv) {
     fs::path path(databaseFile);
     fs::create_directories(path.parent_path());
 
-    sqlite3* dbConnection;
-    sqlite3_open_v2(databaseFile.c_str(), &dbConnection, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, nullptr);
-
-    auto activityStore = std::make_shared<storage::ActivityStore>(dbConnection);
-    auto vcsStore = std::make_shared<storage::VcsStore>(dbConnection);
-    auto projectStore = std::make_shared<storage::ProjectStore>(dbConnection);
+    storage::Database db(databaseFile, SQLite::OPEN_READWRITE | SQLite::OPEN_CREATE);
+    auto activityStore = std::make_shared<storage::ActivityStore>(db);
+    auto vcsStore = std::make_shared<storage::VcsStore>(db);
+    auto projectStore = std::make_shared<storage::ProjectStore>(db);
 
     // Start the tracker.
     auto tracker = std::make_shared<dbus::Tracker>(*dbusConnection, notifier, activityStore, projectStore);
@@ -119,9 +117,5 @@ int main(int argc, char** argv) {
 
     // Stop and save any current activity
     tracker->stop();
-
-    int ret = sqlite3_close(dbConnection);
-    util::database::checkError(ret);
-
     return EXIT_SUCCESS;
 }
