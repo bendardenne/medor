@@ -60,11 +60,6 @@ class Tracker {
     void setQuiet(bool quiet);
 
   private:
-    // Signals
-    void started();
-
-    void stopped();
-
     logsrc::severity_logger<Severity> _logger;
     std::shared_ptr<storage::ActivityStore> _activities;
     std::shared_ptr<storage::ProjectStore> _projects;
