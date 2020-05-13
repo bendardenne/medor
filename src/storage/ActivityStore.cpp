@@ -5,6 +5,7 @@
 #include <iostream>
 
 #include <boost/format.hpp>
+#include <utility>
 
 #include "model/Activity.hpp"
 #include "storage/ActivityStore.hpp"
@@ -12,7 +13,7 @@
 using namespace medor;
 namespace pt = boost::posix_time;
 
-storage::ActivityStore::ActivityStore(Database db) : _db(db) {}
+storage::ActivityStore::ActivityStore(Database db) : _db(std::move(db)) {}
 
 void storage::ActivityStore::add(const model::Activity& activity) {
     model::Project project = activity.getProject();

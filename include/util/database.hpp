@@ -9,6 +9,4 @@ namespace medor::util::database {
 
 void createTables(SQLite::Database& dbConnection);
 
-void checkError(int ret);
-
 } // namespace medor::util::database

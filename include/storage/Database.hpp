@@ -17,7 +17,7 @@ class Database {
     Database(std::string path, int flags);
 
     /**
-     * @return A db connection handle.
+     * Factory method to obtain a db connection handle.
      */
     SQLite::Database handle();
 

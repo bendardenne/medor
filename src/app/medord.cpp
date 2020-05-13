@@ -10,7 +10,6 @@
 #include <boost/log/utility/setup/common_attributes.hpp>
 #include <boost/log/utility/setup/file.hpp>
 #include <boost/program_options.hpp>
-
 #include <sdbus-c++/sdbus-c++.h>
 
 #include "dbus/Constants.hpp"
@@ -113,6 +112,7 @@ int main(int argc, char** argv) {
             }
         }
     }
+
     dbusConnection->leaveEventLoop();
 
     // Stop and save any current activity

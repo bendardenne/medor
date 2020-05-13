@@ -39,20 +39,22 @@ HgClient::HgClient(const std::string& repoPath, const std::string& socketPath) {
 HgClient::~HgClient() { _child.terminate(); }
 
 std::vector<medor::vcs::LogEntry> HgClient::log(pt::time_period timePeriod) {
+    std::vector<LogEntry> result;
     std::string user = config()["ui.username"];
 
     std::stringstream command;
     command << "log;";
     command << "-u;" + user + ";";
 
-    if (!timePeriod.is_null()) {
-        dt::period_formatter<char> formatter(dt::period_formatter<char>::AS_CLOSED_RANGE, " to ", "", "", "");
-        command << "-d;";
-        formatter.put_period(command, command, ' ', timePeriod, pt::time_facet("%Y-%m-%d %H:%M:%S"));
-        command << ";";
+    if (timePeriod.is_null()) {
+        return result;
     }
 
-    std::vector<LogEntry> result;
+    dt::period_formatter<char> formatter(dt::period_formatter<char>::AS_CLOSED_RANGE, " to ", "", "", "");
+    command << "-d;";
+    formatter.put_period(command, command, ' ', timePeriod, pt::time_facet("%Y-%m-%d %H:%M:%S"));
+    command << ";";
+
     std::regex field("(.+?):(.+)[\\r\\n]+");
     for (auto& line : vcs::runCommand(_out, _in, command.str())) {
         LogEntry current;

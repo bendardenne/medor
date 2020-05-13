@@ -61,7 +61,7 @@ void dbus::Tracker::stop() {
 
         BOOST_LOG_SEV(_logger, Info) << "Activity on " << activity.getProject().name << " stopped";
 
-        if (this->_current->getPeriod().length().minutes() > 5) {
+        if (activity.getPeriod().length().minutes() > 1) {
             _activities->add(activity);
             pt::time_duration duration = activity.getPeriod().length();
             std::vector<model::Activity> activities =

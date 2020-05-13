@@ -1,11 +1,7 @@
 //
 // Created by bdardenn on 5/8/20.
 //
-
 #include "storage/Database.hpp"
-
-#include <utility>
-
 #include "util/database.hpp"
 
 SQLite::Database medor::storage::Database::handle() { return SQLite::Database(_path, _flags); }
