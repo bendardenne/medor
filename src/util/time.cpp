@@ -8,6 +8,14 @@
 using namespace medor::util;
 namespace pt = boost::posix_time;
 
+std::string pad(std::string num, size_t minSize) {
+    if (num.size() >= minSize) {
+        return num;
+    }
+
+    return std::string(minSize - num.size(), '0').append(num);
+}
+
 pt::time_period time::weekFromNow(unsigned int offset) {
     // Generators that give the first Monday (Sunday) before (after) a given date.
     greg::first_day_of_the_week_before monday(greg::Monday);
@@ -42,7 +50,7 @@ std::string time::formatDuration(const pt::time_duration& duration, bool brief) 
         ret << std::to_string(duration.hours() % 24) + (brief ? "h" : " hours ");
     }
 
-    ret << std::to_string(duration.minutes()) + (brief ? "m" : " minutes");
+    ret << pad(std::to_string(duration.minutes()), 2) + (brief ? "m" : " minutes");
     return ret.str();
 }
 
